@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,98 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Companies {
+  id                  String                @id @default(uuid())
+  name                String
+  registration_number String?
+  business_type       BusinessCategory
+  specialize          String
+  email               String                @unique
+  phoneNumber         String
+  address             String
+  currency            String
+  fiscal_year         String
+  started_date        DateTime
+  active_permission   Boolean               @default(false)
+  valid_account       Boolean               @default(false)
+  agents              Users[]               @relation("companyAgent")
+  employees           Users[]               @relation("companyEmployee")
+  investors           Investors_Companies[] @relation("companiesInvested")
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
+}
+
+enum BusinessCategory {
+  Accounting
+  Finance
+  Retail
+  Manufacturing
+  Healthcare
+  Technology
+  Education
+  Hospitality
+  Transportation
+}
+
+model Users {
+  id                  String     @id @default(uuid())
+  f_n                 String
+  l_n                 String
+  email               String     @unique
+  password            String
+  con_pass            String
+  last_login          DateTime
+  manager             Boolean    @default(false)
+  department          String?
+  role                String?
+  salary              Float?
+  company_agent       Companies? @relation("companyAgent", fields: [company_agent_id], references: [id], onUpdate: Cascade)
+  company_employee    Companies? @relation("companyEmployee", fields: [company_employee_id], references: [id], onUpdate: Cascade)
+  company_agent_id    String?
+  company_employee_id String?
+  active_account      Boolean    @default(true)
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
+}
+
+model Investors {
+  id                  String                @id @default(uuid())
+  f_n                 String
+  l_n                 String
+  email               String                @unique
+  password            String
+  con_pass            String
+  phone_number        String
+  role                String
+  company_name        String?
+  investment_focus    String?
+  country             String
+  city                String
+  funding_amount      Float?
+  inveseted_companies Investors_Companies[] @relation("invesetedCompanies")
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
+}
+
+model Investors_Companies {
+  investor_id         String
+  company_id          String
+  started_date        DateTime
+  investing_amount    Float
+  investment_type     Investment_Types
+  investor_percentage Float
+  active              Boolean          @default(true)
+
+  investor Investors @relation("invesetedCompanies", fields: [investor_id], references: [id], onUpdate: Cascade)
+  company  Companies @relation("companiesInvested", fields: [company_id], references: [id], onUpdate: Cascade)
+
+  @@unique([investor_id, company_id], map: "investor_company_ids")
+}
+
+enum Investment_Types {
+  Equity
+  Debt
+  ConvertibleDebt
 }
