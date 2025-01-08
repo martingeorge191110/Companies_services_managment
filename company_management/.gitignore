@@ -1,3 +1,4 @@
 /node_modules
-/dest
+# Keep environment variables out of version control
 .env
+/dest
