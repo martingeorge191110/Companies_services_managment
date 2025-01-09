@@ -12,13 +12,13 @@ model Companies {
   name                String
   registration_number String?
   business_type       BusinessCategory
-  specialize          String
+  specialize          String?
   email               String                @unique
-  phoneNumber         String
-  address             String
-  currency            String
-  fiscal_year         String
-  started_date        DateTime
+  phone_number        String
+  address             String?
+  currency            String?
+  fiscal_year         String?
+  started_date        DateTime?
   active_permission   Boolean               @default(false)
   valid_account       Boolean               @default(false)
   agents              Users[]               @relation("companyAgent")
