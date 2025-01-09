@@ -1,10 +1,11 @@
 #!/usr/bin/env ts-node
-
 import express from 'express';
 import dotenv from 'dotenv'
 import cors from 'cors'
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import ApiError from './middlewares/api.errors';
+import CompanyAuthRoute from './routes/company.auth.route.ts';
 
 dotenv.config()
 
@@ -25,8 +26,15 @@ server.use(cookieParser())
 server.use(morgan("tiny"))
 
 
+/* Api Routes */
+server.use("/api/company/auth", CompanyAuthRoute)
 
 
+
+
+
+/* Api error middleware */
+server.use("*", ApiError.ErrMiddleware)
 
 /* Start running the server */
 server.listen(env.PORT, () => {
