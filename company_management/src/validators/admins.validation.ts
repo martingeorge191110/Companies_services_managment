@@ -9,6 +9,9 @@ class AdminsValidation {
 
 
    public firstAdmin = (): ValidationChain[] => {
+      /**
+       * Function that validate first admin information
+       */
       return ([
          body("email")
             .trim().notEmpty().withMessage("Email address feild is Required!")
@@ -42,6 +45,18 @@ class AdminsValidation {
             })
       ])
    }
+
+
+   public loginValid = (): ValidationChain[] => {
+      return ([
+         body("email")
+            .trim().notEmpty().withMessage("This feild is Required!")
+            .isEmail().withMessage("This feild is Required!"),
+         body("password")
+            .trim().notEmpty().withMessage("This feild is Required!")
+      ])
+   }
+
 }
 
 export default AdminsValidation;

@@ -14,4 +14,10 @@ AdminsRouter.route("/first-admin/")
       .post(adminInstance.firstAdmin(), ValidationError, adminInstance.FirstAdmin)
 
 
+/* login process for admins */
+AdminsRouter.route("/login/")
+      .post(adminInstance.loginValid(), ValidationError, adminInstance.Login)
+
+
+
 export default AdminsRouter;

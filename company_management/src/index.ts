@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import ApiError from './middlewares/api.errors';
 import CompanyAuthRoute from './routes/company.auth.route.ts';
+import AdminsRouter from './routes/admins.route.ts';
 
 dotenv.config()
 
@@ -27,9 +28,8 @@ server.use(morgan("tiny"))
 
 
 /* Api Routes */
-server.use("/api/company/auth", CompanyAuthRoute)
-
-
+server.use("/api/company/auth", CompanyAuthRoute) // Company Routes
+server.use("/api/admins", AdminsRouter)
 
 
 
