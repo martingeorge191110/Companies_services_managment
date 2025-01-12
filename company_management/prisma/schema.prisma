@@ -7,6 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Admins {
+  id            String     @id @default(uuid())
+  f_n           String
+  l_n           String
+  email         String     @unique
+  phone_number  String
+  password      String
+  con_pass      String
+  no_wrong_pass Int        @default(0) // When the User try to sign in more than one time
+  last_login    DateTime
+  role          AdminRoles
+}
+
+enum AdminRoles {
+  Admin
+  Service
+}
+
 model Companies {
   id                  String                @id @default(uuid())
   name                String
@@ -14,12 +32,16 @@ model Companies {
   business_type       BusinessCategory
   specialize          String?
   email               String                @unique
+  gen_code            String
+  exp_date            DateTime
   phone_number        String
   address             String?
   currency            String?
   fiscal_year         String?
   started_date        DateTime?
   active_permission   Boolean               @default(false)
+  purchased_system    Boolean               @default(false)
+  amount_paid         Float                 @default(0)
   valid_account       Boolean               @default(false)
   agents              Users[]               @relation("companyAgent")
   employees           Users[]               @relation("companyEmployee")
