@@ -7,6 +7,7 @@ import PrismaInstance from "../prisma.db.ts";
 import { sendMail, SuccessfulyResponse } from "../utilies/global.utilies.ts";
 import {v4} from 'uuid'
 import { decrypting, encrypting } from "../utilies/encrypt.dcrypt.ts";
+import { stripeSession } from "../utilies/stripe.utilies.ts";
 
 
 /**
@@ -72,6 +73,32 @@ class CompanyAuthController extends CompanyAuthValidator {
       return SuccessfulyResponse(res, "Successfuly registered, will contact soon!", {...company})
    }
 
+
+   public VerifyPaymentCode = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      /**
+       * Function that verify the generated code which will create a stripe session to pay the subiscription amount
+       *       ---> check at first the validation of the code and the expir date
+       *       ---> send the session url direct after validation of every thing!
+       */
+      const body = req.body
+      const company = (req as any).company
+
+      const isTrue: boolean = decrypting(company?.gen_code || "") === body.gen_code
+      if (!isTrue)
+         return (next(ApiError.CreateError("Your Generated code is not true, please contact with our Customer services!", 400, null)))
+
+      const isTime: boolean = company?.exp_date && company.exp_date > new Date() || false
+      if (!isTime)
+         return (next(ApiError.CreateError("The code has been expired!, please contact with customer service!", 400, null)))
+
+      try {
+         const session = await stripeSession(req, {companyId: company.id, months: 12})
+
+         return (SuccessfulyResponse(res, "Session Created succefully!", {session_url: session?.url}))
+      } catch (err) {
+         return (next(ApiError.CreateError("Server error during verifing the account!", 500, null)))
+      }
+   }
 }
 
 export default CompanyAuthController;
