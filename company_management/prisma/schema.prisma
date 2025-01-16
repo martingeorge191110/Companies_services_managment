@@ -26,28 +26,30 @@ enum AdminRoles {
 }
 
 model Companies {
-  id                  String                @id @default(uuid())
-  name                String
-  registration_number String?
-  business_type       BusinessCategory
-  specialize          String?
-  email               String                @unique
-  gen_code            String
-  exp_date            DateTime
-  phone_number        String
-  address             String?
-  currency            String?
-  fiscal_year         String?
-  started_date        DateTime?
-  active_permission   Boolean               @default(false)
-  purchased_system    Boolean               @default(false)
-  amount_paid         Float                 @default(0)
-  valid_account       Boolean               @default(false)
-  agents              Users[]               @relation("companyAgent")
-  employees           Users[]               @relation("companyEmployee")
-  investors           Investors_Companies[] @relation("companiesInvested")
-  created_at          DateTime              @default(now())
-  updated_at          DateTime              @updatedAt
+  id                      String                @id @default(uuid())
+  name                    String
+  registration_number     String?
+  business_type           BusinessCategory
+  specialize              String?
+  email                   String                @unique
+  gen_code                String?
+  exp_date                DateTime?
+  phone_number            String
+  address                 String?
+  currency                String?
+  fiscal_year             String?
+  started_date            DateTime?
+  active_permission       Boolean               @default(false)
+  purchased_system        Boolean               @default(false)
+  amount_paid             Float                 @default(0)
+  valid_account           Boolean               @default(false)
+  months_of_subiscription Int                   @default(0)
+  account_exp_date        DateTime?
+  agents                  Users[]               @relation("companyAgent")
+  employees               Users[]               @relation("companyEmployee")
+  investors               Investors_Companies[] @relation("companiesInvested")
+  created_at              DateTime              @default(now())
+  updated_at              DateTime              @updatedAt
 }
 
 enum BusinessCategory {

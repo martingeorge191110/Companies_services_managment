@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import ApiError from './middlewares/api.errors';
 import CompanyAuthRoute from './routes/company.auth.route.ts';
 import AdminsRouter from './routes/admins.route.ts';
+import WebhookRoute from './routes/webhook.routes.ts';
 
 dotenv.config()
 
@@ -18,6 +19,9 @@ server.use(cors({
    origin: env.NODE_ENV === "development" ? "*" : undefined as (string | undefined),
    credentials: false as boolean
 }))
+
+server.use("/api/stripe/", WebhookRoute)
+
 server.use(express.json())
 server.use(express.urlencoded({
    limit: "120mgb",

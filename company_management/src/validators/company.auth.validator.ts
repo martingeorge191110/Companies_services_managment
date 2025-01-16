@@ -1,6 +1,7 @@
 #!/usr/bin/env ts-node
 import { body, Meta, ValidationChain } from 'express-validator'
 import PrismaInstance from '../prisma.db'
+import { Companies } from '@prisma/client'
 
 
 /**
@@ -21,7 +22,7 @@ class CompanyAuthValidator {
             .isEmail().withMessage("This email is not Valid!")
             .custom(async (val: string, {req}: Meta): Promise<boolean | void> => {
                try {
-                  const company = await PrismaInstance.companies.findUnique({
+                  const company: (Companies | null) = await PrismaInstance.companies.findUnique({
                      where: {
                         email: val
                      }
@@ -41,6 +42,33 @@ class CompanyAuthValidator {
             .trim().notEmpty().withMessage("Company Business Type is Required!")
             .isIn(["Accounting", "Finance", "Retail", "Manufacturing", "Healthcare", "Technology", "Education", "Hospitality", "Transportation"])
             .withMessage("Not valid business type!")
+      ])
+   }
+
+   public validateAccountValid = (): ValidationChain[] => {
+      return ([
+         body("email")
+            .trim().notEmpty().withMessage("Email Feild is Required!")
+            .isEmail().withMessage("Not Valid email address")
+            .custom(async (val: string, {req}: Meta): Promise<boolean | void> => {
+               try {
+                  const company: (Companies | null) = await PrismaInstance.companies.findUnique({
+                     where: {
+                        email: val
+                     }
+                  })
+
+                  if (!company)
+                     throw (new Error("we dont have this account!, please try to register or contact with the customer services!"))
+
+                  req.company = company
+                  return (true)
+               } catch (err) {
+                  throw (err || new Error("Server error during validating your account and start pament session!"))
+               }
+            }),
+         body("gen_code")
+            .trim().notEmpty().withMessage("gen_code Feild is Required!")
       ])
    }
 }
