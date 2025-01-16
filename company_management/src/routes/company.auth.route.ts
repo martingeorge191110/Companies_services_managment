@@ -14,4 +14,7 @@ CompanyAuthRoute.route("/register/").post(
 )
 
 
+CompanyAuthRoute.route("/stripe-session/")
+   .post(companyInstance.validateAccountValid(), ValidationError, companyInstance.VerifyPaymentCode)
+
 export default CompanyAuthRoute;
