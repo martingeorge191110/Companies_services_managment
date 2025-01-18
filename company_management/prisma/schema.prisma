@@ -31,7 +31,6 @@ model Companies {
   registration_number     String?
   business_type           BusinessCategory
   specialize              String?
-  email                   String                @unique
   gen_code                String?
   exp_date                DateTime?
   phone_number            String
@@ -45,8 +44,8 @@ model Companies {
   valid_account           Boolean               @default(false)
   months_of_subiscription Int                   @default(0)
   account_exp_date        DateTime?
-  agents                  Users[]               @relation("companyAgent")
-  employees               Users[]               @relation("companyEmployee")
+  agents                  Companies_Agents[]    @relation("companyAgent")
+  employees               Companies_Employees[] @relation("companyEmployee")
   investors               Investors_Companies[] @relation("companiesInvested")
   created_at              DateTime              @default(now())
   updated_at              DateTime              @updatedAt
@@ -65,25 +64,49 @@ enum BusinessCategory {
 }
 
 model Users {
-  id                  String     @id @default(uuid())
-  f_n                 String
-  l_n                 String
-  email               String     @unique
-  password            String
-  con_pass            String
-  last_login          DateTime?
-  is_online           Boolean    @default(false)
-  manager             Boolean    @default(false)
-  department          String?
-  role                String?
-  salary              Float?
-  company_agent       Companies? @relation("companyAgent", fields: [company_agent_id], references: [id], onUpdate: Cascade)
-  company_employee    Companies? @relation("companyEmployee", fields: [company_employee_id], references: [id], onUpdate: Cascade)
-  company_agent_id    String?
-  company_employee_id String?
-  active_account      Boolean    @default(true)
-  created_at          DateTime   @default(now())
-  updated_at          DateTime   @updatedAt
+  id               String                @id @default(uuid())
+  f_n              String
+  l_n              String
+  email            String                @unique
+  password         String
+  con_pass         String
+  avatar           String?
+  last_login       DateTime?
+  is_online        Boolean               @default(false)
+  role             String?
+  monthly_income   Float?
+  monthly_tax      Float?
+  company_agent    Companies_Agents[]    @relation("companyAgent")
+  company_employee Companies_Employees[] @relation("companyEmployee")
+  active_account   Boolean               @default(true)
+  created_at       DateTime              @default(now())
+  updated_at       DateTime              @updatedAt
+}
+
+model Companies_Agents {
+  agent_id   String
+  company_id String
+  agent      Users     @relation("companyAgent", fields: [agent_id], references: [id], onUpdate: Cascade)
+  company    Companies @relation("companyAgent", fields: [company_id], references: [id], onUpdate: Cascade)
+
+  admin               Boolean   @default(false)
+  assigned_role       String
+  start_date          DateTime
+  end_date            DateTime?
+  relationship_status String // the main admin of the company will determine who has the full authorization and who hasnot
+  notes               String?
+  salary              Float
+
+  @@unique([agent_id, company_id], map: "agents_companies_ids")
+}
+
+model Companies_Employees {
+  employee_id String
+  company_id  String
+  agent       Users     @relation("companyEmployee", fields: [employee_id], references: [id], onUpdate: Cascade)
+  company     Companies @relation("companyEmployee", fields: [company_id], references: [id], onUpdate: Cascade)
+
+  @@unique([employee_id, company_id], map: "employees_companies_ids")
 }
 
 model Investors {
