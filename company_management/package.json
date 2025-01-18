@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/axios": "^0.14.4",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
@@ -22,11 +23,14 @@
     "@types/morgan": "^1.9.9",
     "@types/nodemailer": "^6.4.17",
     "@types/nodemon": "^1.19.6",
+    "@types/readline-sync": "^1.4.8",
     "@types/stripe": "^8.0.417",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.7.9",
     "ngrok": "^5.0.0-beta.2",
     "nodemon": "^3.1.9",
     "prisma": "^6.2.1",
+    "readline-sync": "^1.4.10",
     "typescript": "^5.7.2"
   },
   "dependencies": {

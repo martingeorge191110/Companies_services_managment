@@ -71,7 +71,8 @@ model Users {
   email               String     @unique
   password            String
   con_pass            String
-  last_login          DateTime
+  last_login          DateTime?
+  is_online           Boolean    @default(false)
   manager             Boolean    @default(false)
   department          String?
   role                String?
