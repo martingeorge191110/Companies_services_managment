@@ -1,20 +1,18 @@
 #!/usr/bin/env ts-node
 import readlineSync from 'readline-sync';
 import axios, { AxiosError, AxiosInstance } from 'axios'
-import fs from 'fs/promises';
-import { read } from 'fs';
+import GlobalApiTest from './global.api';
 
 
 
 
-class UsersAuthApiTesting {
+class UsersAuthApiTesting extends GlobalApiTest {
 
-   private propmt: string;
    public baseUrl: AxiosInstance;
 
    constructor (propmt: string) {
-      this.propmt = propmt
-      this.baseUrl = axios.create({"baseURL": "http://localhost:8000/api/users/auth", withCredentials: true})
+      super(propmt)
+      this.baseUrl = axios.create({baseURL: "http://localhost:8000/api/users/auth", withCredentials: true})
    }
 
    public startProgram = async () => {
@@ -112,33 +110,6 @@ class UsersAuthApiTesting {
          } else {
             console.log('Error:', error.message, '\n');
          }
-      }
-   }
-
-   /**
-    * read files function, takes path and return content of the file 
-    */
-   public fileReading = async (path: string): Promise<any[]> => {
-      try {
-         const result = await fs.readFile(path, "utf8");
-         return (result ? JSON.parse(result) : []);
-      } catch (err) {
-         const error = err as Error
-         throw (new Error(`Error while reading or parsing the file: ${error.message}`));
-      }
-   }
-
-   /**
-    * write files function, takes path and data to be written 
-    */
-   public fileWritting = async (path: string, data: any) => {
-      try {
-         const file = await fs.writeFile(path, JSON.stringify(data, null, 2), "utf8")
-         console.log(`${path} file has been updated!`)
-         return (file)
-      } catch (err) {
-         const error = err as Error
-         throw (new Error(`Error while writting the file: ${error.message}`));
       }
    }
 }
