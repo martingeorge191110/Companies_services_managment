@@ -31,8 +31,7 @@ model Companies {
   registration_number     String?
   business_type           BusinessCategory
   specialize              String?
-  gen_code                String?
-  exp_date                DateTime?
+  email                   String                @unique
   phone_number            String
   address                 String?
   currency                String?
@@ -96,6 +95,9 @@ model Companies_Agents {
   relationship_status String // the main admin of the company will determine who has the full authorization and who hasnot
   notes               String?
   salary              Float
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@unique([agent_id, company_id], map: "agents_companies_ids")
 }
