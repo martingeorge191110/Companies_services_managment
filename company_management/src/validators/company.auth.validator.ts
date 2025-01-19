@@ -41,7 +41,15 @@ class CompanyAuthValidator {
          body("business_type")
             .trim().notEmpty().withMessage("Company Business Type is Required!")
             .isIn(["Accounting", "Finance", "Retail", "Manufacturing", "Healthcare", "Technology", "Education", "Hospitality", "Transportation"])
-            .withMessage("Not valid business type!")
+            .withMessage("Not valid business type!"),
+         body("relationship_status")
+            .trim().notEmpty().withMessage("relationship_status feild is Required!"),
+         body("assigned_role")
+            .trim().notEmpty().withMessage("assigned_role feild is Required!"),
+         body("started_at")
+            .trim().notEmpty().withMessage("Company starting date is Required!"),
+         body("salary")
+            .trim().notEmpty().withMessage("Your current salary feild is Required!")
       ])
    }
 

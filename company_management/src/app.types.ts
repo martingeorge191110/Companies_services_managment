@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 import * as express from 'express';
-import { Companies, Users } from "@prisma/client";
+import { Companies, Companies_Agents, Users } from "@prisma/client";
 
 
 
@@ -9,6 +9,14 @@ declare global {
       interface Request {
          company?: Companies;
          user?: Users;
+         id?: string;
       }
    }
+}
+
+export interface metaData {
+   company: Companies,
+   company_agent: Companies_Agents,
+   duration: number,
+   amount: number
 }

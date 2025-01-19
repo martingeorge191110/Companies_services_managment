@@ -2,19 +2,19 @@
 import { Router } from "express";
 import CompanyAuthController from "../controllers/company.auth.controller.ts";
 import { ValidationError } from "../validators/common.validators.ts";
+import { userVerifyToken } from "../middlewares/verify.token.ts";
 
 
 const CompanyAuthRoute: Router = Router()
 
 const companyInstance = new CompanyAuthController()
 
+CompanyAuthRoute.use(userVerifyToken)
 
 CompanyAuthRoute.route("/register/").post(
    companyInstance.registerValidor(), ValidationError, companyInstance.Resiter
 )
 
 
-CompanyAuthRoute.route("/stripe-session/")
-   .post(companyInstance.validateAccountValid(), ValidationError, companyInstance.VerifyPaymentCode)
 
 export default CompanyAuthRoute;

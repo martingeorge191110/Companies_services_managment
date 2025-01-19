@@ -1,19 +1,21 @@
 #!/usr/bin/env ts-node
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response, urlencoded } from "express";
 import Stripe from "stripe";
 import ApiError from "../middlewares/api.errors";
 import { SuccessfulyResponse } from "./global.utilies";
 import PrismaInstance from "../prisma.db";
+import { metaData } from "../app.types.ts";
+import { stringToBytes } from "uuid/dist/cjs/v35";
+import { Companies } from "@prisma/client";
 
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "")
 
 
-export const stripeSession = async (req: Request, metadata: {companyId?: string, months: number}) => {
+export const stripeSession = async (req: Request, meta_data: metaData) => {
    try {
 
-      console.log(`${req.protocol}://${req.get("host")}/api/company/payment/success`)
       const session = await stripe.checkout.sessions.create({
          payment_method_types: ["card"],
          line_items: [
@@ -25,10 +27,10 @@ export const stripeSession = async (req: Request, metadata: {companyId?: string,
                      description: `
                         Subscription Details:
                            - Amount: $100.00
-                           - Duration: ${metadata.months} months
+                           - Duration: ${meta_data.duration} months
                            - Start Date: ${new Date().toLocaleDateString()}
                            - Expiration Date: ${new Date(
-                              new Date().setMonth(new Date().getMonth() + metadata.months)
+                              new Date().setMonth(new Date().getMonth() + Number(meta_data.duration))
                            ).toLocaleDateString()}
                         `.trim(), // Detailed subscription description
                   },
@@ -40,9 +42,11 @@ export const stripeSession = async (req: Request, metadata: {companyId?: string,
 
          mode: "payment", // Set the mode to "payment" for a one-time payment
          metadata: {
-            companyId: String(metadata.companyId),  // Ensure metadata is correctly set
-            amount: 100000,
-            duration: Number(metadata.months),
+            company_id: meta_data.company.id,
+            company_name: meta_data.company.name,
+            agent_id: meta_data.company_agent.agent_id,
+            duration: String(meta_data.duration),
+            amount: String(meta_data.amount)
          },
          success_url: `${req.protocol}://${req.get("host")}/api/company/payment/success`, // URL to redirect to on successful payment
          cancel_url: `${req.protocol}://${req.get("host")}/api/company/payment/cancel`,   // URL to redirect to if the payment is canceled
@@ -50,7 +54,7 @@ export const stripeSession = async (req: Request, metadata: {companyId?: string,
 
       return (session)
    } catch (err) {
-      // console.log(err)
+      console.log(err)
       return (null)
    }
 }
@@ -83,16 +87,16 @@ export const FirstPayment = async (req: Request, res: Response, next: NextFuncti
             const expirationDate = new Date();
                expirationDate.setMonth(expirationDate.getMonth() + Number(metaData?.duration));  // Add duration in months
             const company = await PrismaInstance.companies.update({
-               where: {id: metaData?.companyId},
+               where: {id: metaData?.company_id},
                data: {
-                  gen_code: "x".repeat(20), exp_date: null, active_permission: true, purchased_system: true,
-                  amount_paid: Number(metaData?.amount), valid_account: true, started_date: new Date(), months_of_subiscription: Number(metaData?.duration),
-                  account_exp_date: expirationDate
+                  active_permission: true, purchased_system: true, amount_paid: Number(metaData?.amount), valid_account: true, started_date: new Date(),
+                  months_of_subiscription: Number(metaData?.duration), account_exp_date: expirationDate
                }
             })
 
             return (SuccessfulyResponse(res, "Successfuly paid", {...company}))
          } catch (err) {
+            // console.log(err)
             return (next(ApiError.CreateError("Error during recording the payment amount", 200, null)))
          }
    }

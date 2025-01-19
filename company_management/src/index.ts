@@ -21,7 +21,7 @@ server.use(cors({
    credentials: false as boolean
 }))
 
-server.use("/api/stripe/", WebhookRoute)
+server.use("/api/stripe", WebhookRoute)
 
 server.use(express.json())
 server.use(express.urlencoded({
