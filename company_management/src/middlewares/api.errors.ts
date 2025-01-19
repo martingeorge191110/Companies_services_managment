@@ -27,7 +27,7 @@ class ApiError extends Error {
 
    public static ErrMiddleware = (err: ApiError, req: Request, res: Response, next: NextFunction) => {
       /* Function midddle ware that catching api errors */
-      res.status(err.statusCode).json({
+      res.status(err.statusCode || 500).json({
          success: false,
          message: err.message,
          validationErrors: err.errors || null,
