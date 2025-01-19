@@ -9,6 +9,9 @@ import CompanyAuthRoute from './routes/company.auth.route.ts';
 import AdminsRouter from './routes/admins.route.ts';
 import WebhookRoute from './routes/webhook.routes.ts';
 import UserAuthRoutes from './routes/users.auth.routes.ts';
+import UserAccoutRouter from './routes/users.routes.ts';
+
+
 
 dotenv.config()
 
@@ -36,6 +39,7 @@ server.use(morgan("tiny"))
 server.use("/api/company/auth", CompanyAuthRoute) // Company Routes
 server.use("/api/admins/", AdminsRouter)
 server.use("/api/users/auth/", UserAuthRoutes)
+server.use("/api/users", UserAccoutRouter)
 
 
 /* Api error middleware */

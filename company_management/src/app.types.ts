@@ -10,6 +10,7 @@ declare global {
          company?: Companies;
          user?: Users;
          id?: string;
+         avatar_url?: string;
       }
    }
 }
