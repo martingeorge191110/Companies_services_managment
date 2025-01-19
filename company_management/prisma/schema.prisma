@@ -63,23 +63,26 @@ enum BusinessCategory {
 }
 
 model Users {
-  id               String                @id @default(uuid())
-  f_n              String
-  l_n              String
-  email            String                @unique
-  password         String
-  con_pass         String
-  avatar           String?
-  last_login       DateTime?
-  is_online        Boolean               @default(false)
-  role             String?
-  monthly_income   Float?
-  monthly_tax      Float?
-  company_agent    Companies_Agents[]    @relation("companyAgent")
-  company_employee Companies_Employees[] @relation("companyEmployee")
-  active_account   Boolean               @default(true)
-  created_at       DateTime              @default(now())
-  updated_at       DateTime              @updatedAt
+  id                 String                @id @default(uuid())
+  f_n                String
+  l_n                String
+  email              String                @unique
+  password           String
+  con_pass           String
+  phone_number       String?               @unique
+  avatar             String?
+  last_login         DateTime?
+  is_online          Boolean               @default(false)
+  role               String?
+  monthly_income     Float?
+  monthly_tax        Float?
+  mail_notifications Boolean               @default(true)
+  company_agent      Companies_Agents[]    @relation("companyAgent")
+  company_employee   Companies_Employees[] @relation("companyEmployee")
+  investor           Investors?            @relation("investor")
+  active_account     Boolean               @default(true)
+  created_at         DateTime              @default(now())
+  updated_at         DateTime              @updatedAt
 }
 
 model Companies_Agents {
@@ -112,22 +115,16 @@ model Companies_Employees {
 }
 
 model Investors {
-  id                  String                @id @default(uuid())
-  f_n                 String
-  l_n                 String
-  email               String                @unique
-  password            String
-  con_pass            String
-  phone_number        String
-  role                String
-  company_name        String?
+  user_id             String                @unique
   investment_focus    String?
   country             String
   city                String
   funding_amount      Float?
   inveseted_companies Investors_Companies[] @relation("invesetedCompanies")
-  created_at          DateTime              @default(now())
-  updated_at          DateTime              @updatedAt
+  user_account        Users                 @relation("investor", fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Investors_Companies {
@@ -139,7 +136,7 @@ model Investors_Companies {
   investor_percentage Float
   active              Boolean          @default(true)
 
-  investor Investors @relation("invesetedCompanies", fields: [investor_id], references: [id], onUpdate: Cascade)
+  investor Investors @relation("invesetedCompanies", fields: [investor_id], references: [user_id], onUpdate: Cascade)
   company  Companies @relation("companiesInvested", fields: [company_id], references: [id], onUpdate: Cascade)
 
   @@unique([investor_id, company_id], map: "investor_company_ids")
