@@ -28,5 +28,9 @@ UserAccoutRouter.route("/profile/")
 
 
 
+UserAccoutRouter.route("/companies/")
+         .get(userInstance.GetUserCompanies)
+
+
 
 export default UserAccoutRouter;
