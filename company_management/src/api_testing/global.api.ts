@@ -1,16 +1,11 @@
 #!/usr/bin/env ts-node
 import fs from 'fs/promises'
+import readlineSync from 'readline-sync'
 
 
 
 
 class GlobalApiTest {
-
-   public propmt: string;
-
-   constructor (propmt: string) {
-      this.propmt = propmt
-   }
 
    /**
     * read files function, takes path and return content of the file 

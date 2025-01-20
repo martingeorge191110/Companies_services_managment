@@ -1,27 +1,30 @@
 #!/usr/bin/env ts-node
 import axios, { AxiosError, AxiosInstance } from "axios";
-import GlobalApiTest from "./global.api.ts";
-import readlineSync, { question } from 'readline-sync';
-
+import readlineSync from 'readline-sync';
+import GlobalApiTest from "./global.api";
 
 
 const token: string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNDJjMmZlLTI1OWMtNDYxYS1hZjFiLTA0YjI3ODk0NzkxNSIsImlhdCI6MTczNzIwODkyNCwiZXhwIjoxNzM3ODEzNzI0fQ.rQfDjUmIIULzqnJUm0cnX9csaAqqvkZ70oMw9vv_jdk"
 
-class CompaniesAuthAPi extends GlobalApiTest {
+class CompaniesAuthAPi extends GlobalApiTest{
 
-   public baseUrl: AxiosInstance;
+   private companiesAuthUrl: AxiosInstance;
+   private prompt: string;
 
-   constructor (propmt: string) {
-      super(propmt)
-      this.baseUrl = axios.create({baseURL: "http://localhost:8000/api/company/auth", withCredentials: true})
+   constructor () {
+      super()
+      this.prompt = 
+      `\n***Company authintication***\n\t[1] --> Register new Company\nInput: `
+      this.companiesAuthUrl = axios.create({baseURL: "http://localhost:8000/api/company/auth", withCredentials: true})
    }
 
-   public startProgram = async () => {
+   public CompanyAuthProgram = async () => {
       while (true) {
-         const input = readlineSync.question(this.propmt);
+         const input = readlineSync.question(this.prompt);
+         console.log('')
 
-         if (input.trim().toLowerCase() === 'exit') {
-            console.log('Exiting shell...');
+         if (input.trim().toLowerCase() === 'back') {
+            console.log('Backing to the previous step...\n');
             break;
          }
 
@@ -30,13 +33,17 @@ class CompaniesAuthAPi extends GlobalApiTest {
                await this.Register()
                break;
             default:
+               console.log("#".repeat(17))
                console.log("Unknown input!")
+               console.log("#".repeat(17))
+               console.log('')
          }
 
       }
    }
 
-   public Register = async () => {
+   private Register = async () => {
+      console.log("Register")
       const name = readlineSync.question("Company Name: ")
       const email = readlineSync.question("Company Email: ")
       const phone_number = readlineSync.question("Company Phone Number: ")
@@ -47,7 +54,7 @@ class CompaniesAuthAPi extends GlobalApiTest {
       const salary = Number(readlineSync.question("Your Current salary in the company: "))
 
       try {
-         const response = await this.baseUrl.post("/register/", {
+         const response = await this.companiesAuthUrl.post("/register/", {
             name, email, phone_number, business_type, relationship_status,
             assigned_role, started_at, salary
          }, {
@@ -62,32 +69,7 @@ class CompaniesAuthAPi extends GlobalApiTest {
             console.log (data)
             return;
          }
-         const companyFile = await this.fileReading("./data/companies.json")
-         const companyAgentFile = await this.fileReading("./data/companies.agents.json")
-         await this.fileWritting('./data/companies.json', [...companyFile, {...data.data.company}])
-         await this.fileWritting('./data/companies.agents.json', [...companyAgentFile, {...data.data.company_agent}])
-
          console.log(`Payment Session URL: ${data.data.url}`)
-
-         const paid = readlineSync.question("Did you paid the amount? [yes|no] --> ")
-         if (paid === 'yes') {
-            const amount = Number(readlineSync.questionInt("How much have you paid? "))
-            const company = data.data.company
-            const expirationDate = new Date();
-               expirationDate.setMonth(expirationDate.getMonth() + 12);
-            const companyFile = await this.fileReading("./data/companies.json")
-            companyFile.forEach((ele) => {
-               if (ele.id === company.id) {
-                  ele.active_permission = true;
-                  ele.purchased_system = true;
-                  ele.amount_paid = amount;
-                  ele.valid_account = true;
-                  ele.months_of_subiscription = 12;
-                  ele.account_exp_date = expirationDate;
-               }
-            })
-            await this.fileWritting("./data/companies.json", companyFile)
-         }
       } catch (err) {
          const error = err as AxiosError
          if (error.response) {
@@ -100,6 +82,4 @@ class CompaniesAuthAPi extends GlobalApiTest {
    }
 }
 
-const apiInstance = new CompaniesAuthAPi(`[1] --> Register new Company Api process.\nInput: `)
-
-apiInstance.startProgram()
+export default CompaniesAuthAPi;
