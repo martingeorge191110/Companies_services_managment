@@ -28,6 +28,7 @@ enum AdminRoles {
 model Companies {
   id                      String                @id @default(uuid())
   name                    String
+  avatar                  String?
   registration_number     String?
   business_type           BusinessCategory
   specialize              String?
@@ -93,7 +94,7 @@ model Companies_Agents {
 
   admin               Boolean   @default(false)
   assigned_role       String
-  start_date          DateTime
+  start_date          DateTime?
   end_date            DateTime?
   relationship_status String // the main admin of the company will determine who has the full authorization and who hasnot
   notes               String?
@@ -110,6 +111,24 @@ model Companies_Employees {
   company_id  String
   agent       Users     @relation("companyEmployee", fields: [employee_id], references: [id], onUpdate: Cascade)
   company     Companies @relation("companyEmployee", fields: [company_id], references: [id], onUpdate: Cascade)
+
+  role            String
+  start_date      DateTime?
+  end_date        DateTime?
+  status          Employees_Status         @default(Active)
+  access_level    String? // Level of Authorization
+  department      String?
+  location        String?
+  salary          Float?
+  bonus           Float?
+  contract_type   Employees_Contract_Type?
+  rating          Int?
+  notes           String                   @db.VarChar(1024)
+  holidays        Int?
+  taken_holidays  Int?
+  deducted_amount Float                    @default(0)
+  created_at      DateTime                 @default(now())
+  updated_at      DateTime                 @updatedAt
 
   @@unique([employee_id, company_id], map: "employees_companies_ids")
 }
@@ -146,4 +165,15 @@ enum Investment_Types {
   Equity
   Debt
   ConvertibleDebt
+}
+
+enum Employees_Status {
+  Active
+  InActive
+  Susbended
+}
+
+enum Employees_Contract_Type {
+  FullTime
+  PartTime
 }
