@@ -46,6 +46,7 @@ class UserAuthController extends UserAuthValidation {
       const user: (Users | null) = (req as any).user || null
       const body = req.body
 
+      console.log(user?.password, body.password)
       const isPassTrue: boolean = bcrypt.compareSync(body.password, user?.password || "")
       if (!isPassTrue)
          return (next(ApiError.CreateError("Password is not true!", 400, null)))

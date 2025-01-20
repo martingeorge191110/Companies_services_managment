@@ -2,15 +2,16 @@
 import { Request, Response, NextFunction } from "express";
 import UserValidation from "../validators/user.validation.ts";
 import ApiError from "../middlewares/api.errors.ts";
-import { Users } from "@prisma/client";
+import { Companies_Agents, Companies_Employees, Users } from "@prisma/client";
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
 
 
 
 
+
 /**
- * 
+ * UserController to manage user profile settings api operations
  */
 class UserController extends UserValidation {
 
@@ -80,6 +81,36 @@ class UserController extends UserValidation {
       } catch (err) {
          return (next(ApiError.CreateError("Server error during Updating the User information!", 500, null)))
       }
+   }
+
+
+   public GetUserCompanies = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const id: string = (req as any).id
+
+      let compAgents;
+
+      let compEmployee;
+
+      try {
+         compAgents = await PrismaInstance.companies_Agents.findMany({
+            where: {agent_id: id},
+            select: {company_id: true, admin: true, assigned_role: true, company: {select: {
+               name: true, avatar: true
+            }}}
+         })
+
+         compEmployee = await PrismaInstance.companies_Employees.findMany({
+            where: {employee_id: id},
+            select: {company_id: true, role: true, status: true, contract_type: true, rating: true, company: {select: {
+               name: true, avatar: true
+            }}}
+         })
+
+      } catch (err) {
+         return (next(ApiError.CreateError("Server erro druring, Retreive user partenerships!", 500, null)))
+      }
+
+      return (SuccessfulyResponse(res, "Successfully retreived User data!", {compAgents, compEmployee}))
    }
 }
 
