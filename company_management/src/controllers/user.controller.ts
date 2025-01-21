@@ -5,6 +5,7 @@ import ApiError from "../middlewares/api.errors.ts";
 import { Companies_Agents, Companies_Employees, Users } from "@prisma/client";
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
+import { query, validationResult } from "express-validator";
 
 
 
@@ -111,6 +112,35 @@ class UserController extends UserValidation {
       }
 
       return (SuccessfulyResponse(res, "Successfully retreived User data!", {compAgents, compEmployee}))
+   }
+
+
+   public SearchingUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const query = req.query as {feild: string, value: string}
+
+      let feildQuery;
+      if (query.feild === "email")
+         feildQuery = {
+            email: {
+               startsWith: query.value
+            }
+         }
+      else
+         feildQuery = {
+            phone_number: {
+               startsWith: query.value
+            }
+         }
+
+      try {
+         const users: Users[] = await PrismaInstance.users.findMany({
+            where: feildQuery
+         })
+
+         return (SuccessfulyResponse(res, "Successfully retreived!", {users}))
+      } catch (err) {
+         return (next(ApiError.CreateError("Searver error while searching about users!", 500, null)))
+      }
    }
 }
 

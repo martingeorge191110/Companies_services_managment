@@ -82,6 +82,7 @@ model Users {
   company_employee   Companies_Employees[] @relation("companyEmployee")
   investor           Investors?            @relation("investor")
   active_account     Boolean               @default(true)
+  profile_complete   Boolean               @default(false)
   created_at         DateTime              @default(now())
   updated_at         DateTime              @updatedAt
 }

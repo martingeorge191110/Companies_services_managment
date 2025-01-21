@@ -33,4 +33,9 @@ UserAccoutRouter.route("/companies/")
 
 
 
+UserAccoutRouter.route("/searching/")
+         .get(userInstance.searchingValidation(), ValidationError, userInstance.SearchingUsers)
+
+
+
 export default UserAccoutRouter;
