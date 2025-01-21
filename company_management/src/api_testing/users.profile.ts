@@ -14,7 +14,7 @@ class UserProfileApi extends UsersAuthApiTesting {
    constructor () {
       super()
       this.profilePropmt = 
-      `***User Profile***\n\t[1] --> Get Your own information.\n\t[2] --> Get your companies information.\nInput: `
+      `***User Profile***\n\t[1] --> Get Your own information.\n\t[2] --> Get your companies information.\n\t[3] --> Update information.\nInput: `
       this.userProfileUrl = axios.create({baseURL: "http://localhost:8000/api/users", withCredentials: true})
    }
 
@@ -34,6 +34,9 @@ public UserProfileProgram = async () => {
                break;
             case '2':
                await this.GetUserCompaniesInfo()
+               break;
+            case '3':
+               await this.UpdateUserInfo()
                break;
             default: {
                console.log("#".repeat(17))
@@ -87,7 +90,7 @@ public UserProfileProgram = async () => {
          })
 
          console.log("Response received: ");
-         console.log(response.data, '\n');
+         console.log({...response.data, ...response.data.data}, '\n');
          if (!response.data.success) {
             console.log(response.data)
             return;
@@ -104,7 +107,40 @@ public UserProfileProgram = async () => {
    }
 
    private UpdateUserInfo = async () => {
-      
+      const token = readlineSync.question('Please enter your Authorized Token: ');
+      const dataLength = readlineSync.questionInt('please enter the number of feilds you want to update: ')
+      const body: any = {}
+      const numberFeilds = ['monthly_income', 'monthly_tax']
+      for (let i = 0; i < dataLength; i++) {
+         const feild = readlineSync.question(`Feild: [${i + 1}]: `)
+         const value = readlineSync.question(`Value: [${i + 1}]: `)
+         body[`${feild}`] = numberFeilds.includes(feild) ? Number(value) : value
+      }
+
+      try {
+         console.log("Sending registration request...");
+         const response = await this.userProfileUrl.put("/profile/", body, {
+            headers: {
+               Authorization: `Barear ${token}`,
+               "Content-Type": "application/json"
+            }
+         })
+
+         console.log("Response received: ");
+         console.log({...response.data}, '\n');
+         if (!response.data.success) {
+            console.log(response.data)
+            return;
+         }
+      } catch (err) {
+         const error = err as AxiosError;
+         if (error.response) {
+            const data: any = error.response.data
+            console.log('Error Response:', {...data, stack: ""}, '\n');
+         } else {
+            console.log('Error:', error.message, '\n');
+         }
+      }
    }
 }
 
