@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import UserValidation from "../validators/user.validation.ts";
 import ApiError from "../middlewares/api.errors.ts";
-import { Companies_Agents, Companies_Employees, Users } from "@prisma/client";
+import { Companies_Agents, Companies_System_Employees, Users } from "@prisma/client";
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
 import { query, validationResult } from "express-validator";
@@ -100,7 +100,7 @@ class UserController extends UserValidation {
             }}}
          })
 
-         compEmployee = await PrismaInstance.companies_Employees.findMany({
+         compEmployee = await PrismaInstance.companies_System_Employees.findMany({
             where: {employee_id: id},
             select: {company_id: true, role: true, status: true, contract_type: true, rating: true, company: {select: {
                name: true, avatar: true
@@ -116,6 +116,9 @@ class UserController extends UserValidation {
 
 
    public SearchingUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      /**
+       * SearchingUsers - Controller for searching about other users using email or phone number
+       */
       const query = req.query as {feild: string, value: string}
 
       let feildQuery;
