@@ -26,29 +26,30 @@ enum AdminRoles {
 }
 
 model Companies {
-  id                      String                @id @default(uuid())
-  name                    String
-  avatar                  String?
-  registration_number     String?
-  business_type           BusinessCategory
-  specialize              String?
-  email                   String                @unique
-  phone_number            String
-  address                 String?
-  currency                String?
-  fiscal_year             String?
-  started_date            DateTime?
-  active_permission       Boolean               @default(false)
-  purchased_system        Boolean               @default(false)
-  amount_paid             Float                 @default(0)
-  valid_account           Boolean               @default(false)
-  months_of_subiscription Int                   @default(0)
-  account_exp_date        DateTime?
-  agents                  Companies_Agents[]    @relation("companyAgent")
-  employees               Companies_Employees[] @relation("companyEmployee")
-  investors               Investors_Companies[] @relation("companiesInvested")
-  created_at              DateTime              @default(now())
-  updated_at              DateTime              @updatedAt
+  id                         String                         @id @default(uuid())
+  name                       String
+  avatar                     String?
+  registration_number        String?
+  business_type              BusinessCategory
+  specialize                 String?
+  email                      String                         @unique
+  phone_number               String
+  address                    String?
+  currency                   String?
+  fiscal_year                String?
+  started_date               DateTime?
+  active_permission          Boolean                        @default(false)
+  purchased_system           Boolean                        @default(false)
+  amount_paid                Float                          @default(0)
+  valid_account              Boolean                        @default(false)
+  months_of_subiscription    Int                            @default(0)
+  account_exp_date           DateTime?
+  agents                     Companies_Agents[]             @relation("companyAgent")
+  employees                  Companies_System_Employees[]   @relation("companySystemEmployee")
+  investors                  Investors_Companies[]          @relation("companiesInvested")
+  company_recorded_employees Companies_Recorded_Employees[] @relation("recordedEmployees")
+  created_at                 DateTime                       @default(now())
+  updated_at                 DateTime                       @updatedAt
 }
 
 enum BusinessCategory {
@@ -64,27 +65,27 @@ enum BusinessCategory {
 }
 
 model Users {
-  id                 String                @id @default(uuid())
+  id                 String                       @id @default(uuid())
   f_n                String
   l_n                String
-  email              String                @unique
+  email              String                       @unique
   password           String
   con_pass           String
-  phone_number       String?               @unique
+  phone_number       String?                      @unique
   avatar             String?
   last_login         DateTime?
-  is_online          Boolean               @default(false)
+  is_online          Boolean                      @default(false)
   role               String?
   monthly_income     Float?
   monthly_tax        Float?
-  mail_notifications Boolean               @default(true)
-  company_agent      Companies_Agents[]    @relation("companyAgent")
-  company_employee   Companies_Employees[] @relation("companyEmployee")
-  investor           Investors?            @relation("investor")
-  active_account     Boolean               @default(true)
-  profile_complete   Boolean               @default(false)
-  created_at         DateTime              @default(now())
-  updated_at         DateTime              @updatedAt
+  mail_notifications Boolean                      @default(true)
+  company_agent      Companies_Agents[]           @relation("companyAgent")
+  company_employee   Companies_System_Employees[] @relation("companySystemEmployee")
+  investor           Investors?                   @relation("investor")
+  active_account     Boolean                      @default(true)
+  profile_complete   Boolean                      @default(false)
+  created_at         DateTime                     @default(now())
+  updated_at         DateTime                     @updatedAt
 }
 
 model Companies_Agents {
@@ -107,11 +108,11 @@ model Companies_Agents {
   @@unique([agent_id, company_id], map: "agents_companies_ids")
 }
 
-model Companies_Employees {
+model Companies_System_Employees {
   employee_id String
   company_id  String
-  agent       Users     @relation("companyEmployee", fields: [employee_id], references: [id], onUpdate: Cascade)
-  company     Companies @relation("companyEmployee", fields: [company_id], references: [id], onUpdate: Cascade)
+  agent       Users     @relation("companySystemEmployee", fields: [employee_id], references: [id], onUpdate: Cascade)
+  company     Companies @relation("companySystemEmployee", fields: [company_id], references: [id], onUpdate: Cascade)
 
   role            String
   start_date      DateTime?
@@ -131,7 +132,36 @@ model Companies_Employees {
   created_at      DateTime                 @default(now())
   updated_at      DateTime                 @updatedAt
 
-  @@unique([employee_id, company_id], map: "employees_companies_ids")
+  @@unique([employee_id, company_id], map: "employees_companies_system_ids")
+}
+
+model Companies_Recorded_Employees {
+  id              String                   @id @default(uuid())
+  f_n             String
+  l_n             String
+  email           String?                  @unique
+  phone_number    String                   @unique
+  avatar          String?
+  status          Employees_Status         @default(Active)
+  role            String
+  gross_profit    Float
+  net_profit      Float
+  date_of_birth   DateTime?
+  start_date      DateTime?
+  end_date        DateTime?
+  department      String
+  salary          Float
+  bonus           Float?
+  contract_type   Employees_Contract_Type?
+  rating          Int?
+  notes           String                   @db.VarChar(1024)
+  taken_holidays  Int?
+  deducted_amount Float                    @default(0)
+  location        String?
+  is_active       Boolean                  @default(true)
+
+  company_id String
+  company    Companies @relation("recordedEmployees", fields: [company_id], references: [id], onDelete: Cascade)
 }
 
 model Investors {
