@@ -6,3 +6,4 @@ System_Process
 prisma/migrations
 src/api_testing/data
 src/utilies/states
+src/api_testing/socket.test.ts

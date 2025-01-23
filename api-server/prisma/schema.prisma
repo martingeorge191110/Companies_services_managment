@@ -201,6 +201,7 @@ enum Investment_Types {
 enum Employees_Status {
   Active
   InActive
+  Pending
   Susbended
 }
 
