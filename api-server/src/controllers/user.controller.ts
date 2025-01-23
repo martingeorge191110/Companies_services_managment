@@ -6,6 +6,7 @@ import { Companies_Agents, Companies_System_Employees, Users } from "@prisma/cli
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
 import { query, validationResult } from "express-validator";
+import { promises } from "dns";
 
 
 
@@ -145,6 +146,7 @@ class UserController extends UserValidation {
          return (next(ApiError.CreateError("Searver error while searching about users!", 500, null)))
       }
    }
+
 }
 
 export default UserController;
