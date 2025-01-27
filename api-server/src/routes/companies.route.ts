@@ -3,6 +3,7 @@ import { Router } from "express";
 import CompaniesController from "../controllers/companies.controller.ts";
 import { userVerifyToken } from "../middlewares/verify.token.ts";
 import { ValidationError } from "../validators/common.validators.ts";
+import AccountingRoute from "./accounting.routes.ts";
 
 
 
@@ -21,6 +22,8 @@ CompaniesRoute.route("/dashboard/")
          .get(companiesIntance.companyIdQuery(), ValidationError, companiesIntance.CompanyDashoard)
          .put(companiesIntance.companyIdQuery(), ValidationError, companiesIntance.UpdateInfo)
 
+
+CompaniesRoute.use('/accounting', AccountingRoute)
 
 
 export default CompaniesRoute;
