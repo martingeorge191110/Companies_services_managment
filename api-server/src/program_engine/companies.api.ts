@@ -126,7 +126,7 @@ ${empStr.length > 3 ? '\t\t' : ''}${empStr}${empStr.length > 3 ? '\n' : ''}Input
 
 
    private RetreiveCompany = async (company: any, userData: (Users | any)) => {
-      console.log(company)
+
       while (true) {
          const input = readlineSync.question(this.oneCompanyShell(company, userData));
 
