@@ -83,9 +83,8 @@ enum AccountType {
 model Accounting {
   company_id String @id
 
-  tax_rate       Float?
-  is_active      Boolean @default(true)
-  transaction_id String
+  tax_rate  Float?
+  is_active Boolean @default(true)
 
   access_users Accounting_Access_Users[] @relation("AccountingAccessUsers")
   transaction  Transactions[]            @relation("SystemTransactions")
@@ -267,7 +266,7 @@ model Companies_System_Employees {
   start_date      DateTime?
   end_date        DateTime?
   status          Employees_Status         @default(Active)
-  access_level    String? // Level of Authorization
+  access_level    Int // Level of Authorization out of 10
   department      String?
   location        String?
   salary          Float?
