@@ -19,5 +19,8 @@ CompaniesRoute.route("/database/")
 
 CompaniesRoute.route("/dashboard/")
          .get(companiesIntance.companyIdQuery(), ValidationError, companiesIntance.CompanyDashoard)
+         .put(companiesIntance.companyIdQuery(), ValidationError, companiesIntance.UpdateInfo)
+
+
 
 export default CompaniesRoute;

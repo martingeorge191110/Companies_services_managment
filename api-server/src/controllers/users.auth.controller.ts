@@ -66,6 +66,21 @@ class UserAuthController extends UserAuthValidation {
 
       return (SuccessfulyResponse(res, "Succesfully logined!", {...userUpdated, token}))
    }
+
+
+   public VerifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const id: string = (req as any).id
+
+      try {
+         const user: (Users | null) = await PrismaInstance.users.findUnique({
+            where: {id}
+         })
+
+         return (SuccessfulyResponse(res, "Account is Valid!", {...user}))
+      } catch (err) {
+         return (next(ApiError.CreateError("Server error during verifying user token!", 500, null)))
+      }
+   }
 }
 
 export default UserAuthController;
