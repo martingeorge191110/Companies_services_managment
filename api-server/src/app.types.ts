@@ -11,6 +11,16 @@ declare global {
          user?: Users;
          id?: string;
          avatar_url?: string;
+         accounting?: {
+            created_at: Date,
+            updated_at: Date,
+            company_id: string,
+            tax_rate: number | null,
+            is_active: boolean,
+            company: {
+               valid_account: boolean;
+            }
+         }
       }
    }
 }

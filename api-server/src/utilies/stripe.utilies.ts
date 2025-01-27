@@ -84,6 +84,9 @@ export const FirstPayment = async (req: Request, res: Response, next: NextFuncti
          try {
             const metaData = event.data.object.metadata
 
+            if (!metaData)
+               return (next(ApiError.CreateError("Meta Data should be included!", 400, null)))
+
             const expirationDate = new Date();
                expirationDate.setMonth(expirationDate.getMonth() + Number(metaData?.duration));  // Add duration in months
             const company = await PrismaInstance.companies.update({
@@ -92,6 +95,22 @@ export const FirstPayment = async (req: Request, res: Response, next: NextFuncti
                   active_permission: true, purchased_system: true, amount_paid: Number(metaData?.amount), valid_account: true, started_date: new Date(),
                   months_of_subiscription: Number(metaData?.duration), account_exp_date: expirationDate
                }
+            })
+
+            const accounting = await PrismaInstance.accounting.create({
+               data: {company_id: company.id}
+            })
+   
+            await PrismaInstance.accounting_Access_Users.create({
+               data: {
+                  system_id: accounting.company_id, user_id: metaData.agent_id
+               }
+            })
+            await PrismaInstance.accounting_Assets.create({
+               data: {accounting_system_id: accounting.company_id}
+            })
+            await PrismaInstance.accounting_Liabilities.create({
+               data: {accounting_system_id: accounting.company_id}
             })
 
             return (SuccessfulyResponse(res, "Successfuly paid", {...company}))
