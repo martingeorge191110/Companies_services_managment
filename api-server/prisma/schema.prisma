@@ -48,8 +48,153 @@ model Companies {
   employees                  Companies_System_Employees[]   @relation("companySystemEmployee")
   investors                  Investors_Companies[]          @relation("companiesInvested")
   company_recorded_employees Companies_Recorded_Employees[] @relation("recordedEmployees")
+  accounting_system          Accounting?                    @relation("AccountingSystem")
+  financail_accounts         Financial_Accounts[]           @relation("CompanyFinancialAccount")
   created_at                 DateTime                       @default(now())
   updated_at                 DateTime                       @updatedAt
+}
+
+model Financial_Accounts {
+  id             String      @id @default(uuid())
+  provider_name  String      @db.VarChar(255)
+  account_number String      @unique
+  accountType    AccountType
+  currency       String      @default("USD")
+  balance        Decimal?    @db.Decimal(20, 2)
+  is_active      Boolean     @default(true)
+  notes          String?     @db.VarChar(1024)
+
+  company_id           String
+  company              Companies      @relation("CompanyFinancialAccount", fields: [company_id], references: [id], onDelete: Cascade)
+  related_transactions Transactions[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum AccountType {
+  BANK_ACCOUNT
+  DIGITAL_WALLET
+  CREDIT_ACCOUNT
+  CASH_ACCOUNT
+  INVESTMENT_ACCOUNT
+}
+
+model Accounting {
+  company_id String @id
+
+  tax_rate       Float?
+  is_active      Boolean @default(true)
+  transaction_id String
+
+  access_users Accounting_Access_Users[] @relation("AccountingAccessUsers")
+  transaction  Transactions[]            @relation("SystemTransactions")
+  assets       Accounting_Assets[]       @relation("SystemAssets")
+  liabilities  Accounting_Liabilities[]  @relation("SystemLiabilities")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  company Companies @relation("AccountingSystem", fields: [company_id], references: [id], onDelete: Cascade)
+}
+
+model Invoices {
+  id             String       @id @default(uuid())
+  invoice_number String       @unique
+  invoiceLink    String?
+  transaction_id String
+  transaction    Transactions @relation("invoiceInformation", fields: [transaction_id], references: [id], onDelete: Cascade)
+  updated_at     DateTime     @updatedAt
+}
+
+model Accounting_Assets {
+  id                   String         @id @default(uuid())
+  accounting_system_id String
+  transactions         Transactions[] @relation("AssetsTransactions")
+  accounting_system    Accounting     @relation("SystemAssets", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
+}
+
+model Accounting_Liabilities {
+  id                   String         @id @default(uuid())
+  accounting_system_id String
+  transactions         Transactions[] @relation("LiabilitiesTransactions")
+  accounting_system    Accounting     @relation("SystemLiabilities", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
+}
+
+model Transactions {
+  id String @id @default(uuid())
+
+  total_amount          Decimal?           @db.Decimal(20, 2) // total amount before taxex and discounts
+  actual_amount         Decimal            @db.Decimal(20, 2) // actual amount after taxex and discounts
+  description           String?            @db.VarChar(1024)
+  status                TransactionsStatus
+  paymentMethod         PaymentMethod
+  tax_rate              Float?
+  discount_rate         Float?
+  type                  TransactionType
+  due_date              DateTime?
+  notes                 String?            @db.VarChar(1024)
+  customer_name         String
+  customer_email        String
+  customer_phone_number String
+
+  financial_account_id String?
+  financial_account    Financial_Accounts? @relation(fields: [financial_account_id], references: [id], onUpdate: Cascade)
+
+  asset_id         String? // Reference to an asset, if applicable.
+  liability_id     String? // Reference to a liability, if applicable.
+  invoice_id       String?
+  user_recorded_id String
+  user_updated_id  String?
+  liability        Accounting_Liabilities? @relation("LiabilitiesTransactions", fields: [liability_id], references: [id], onDelete: Cascade)
+  assets           Accounting_Assets?      @relation("AssetsTransactions", fields: [asset_id], references: [id], onDelete: Cascade)
+  invoice          Invoices[]              @relation("invoiceInformation")
+  user_recorded    Users                   @relation("UserRecordTransaction", fields: [user_recorded_id], references: [id], onUpdate: Cascade)
+  user_updated     Users?                  @relation("UserUpdatedTransaction", fields: [user_updated_id], references: [id], onUpdate: Cascade)
+
+  accounting_system_id String
+  accounting_system    Accounting @relation("SystemTransactions", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PaymentMethod {
+  Cash
+  Credit_Card
+  Debit_Card
+  Bank_Transfer
+  Digital_Wallets
+}
+
+enum TransactionsStatus {
+  Completed
+  Pending
+  Failed
+}
+
+enum TransactionType {
+  ACCOUNTS_RECEIVABLE
+  ACCOUNTS_PAYABLE
+  CASH_FLOW
+  EXPENSES
+  REVENUES
+  FIXED_ASSETS
+  INVESTMENTS
+  LIABILITIES
+  EQUITY
+  TAX_PAYMENTS
+  MISCELLANEOUS
+}
+
+model Accounting_Access_Users {
+  system_id String
+  user_id   String
+
+  accounting_system Accounting @relation("AccountingAccessUsers", fields: [system_id], references: [company_id], onDelete: Cascade)
+  user              Users      @relation("UsersAccessAccounting", fields: [user_id], references: [id], onUpdate: Cascade)
+
+  @@unique([system_id, user_id], map: "accounting_users_access")
 }
 
 enum BusinessCategory {
@@ -65,27 +210,30 @@ enum BusinessCategory {
 }
 
 model Users {
-  id                 String                       @id @default(uuid())
-  f_n                String
-  l_n                String
-  email              String                       @unique
-  password           String
-  con_pass           String
-  phone_number       String?                      @unique
-  avatar             String?
-  last_login         DateTime?
-  is_online          Boolean                      @default(false)
-  role               String?
-  monthly_income     Float?
-  monthly_tax        Float?
-  mail_notifications Boolean                      @default(true)
-  company_agent      Companies_Agents[]           @relation("companyAgent")
-  company_employee   Companies_System_Employees[] @relation("companySystemEmployee")
-  investor           Investors?                   @relation("investor")
-  active_account     Boolean                      @default(true)
-  profile_complete   Boolean                      @default(false)
-  created_at         DateTime                     @default(now())
-  updated_at         DateTime                     @updatedAt
+  id                       String                       @id @default(uuid())
+  f_n                      String
+  l_n                      String
+  email                    String                       @unique
+  password                 String
+  con_pass                 String
+  phone_number             String?                      @unique
+  avatar                   String?
+  last_login               DateTime?
+  is_online                Boolean                      @default(false)
+  role                     String?
+  monthly_income           Float?
+  monthly_tax              Float?
+  mail_notifications       Boolean                      @default(true)
+  company_agent            Companies_Agents[]           @relation("companyAgent")
+  company_employee         Companies_System_Employees[] @relation("companySystemEmployee")
+  investor                 Investors?                   @relation("investor")
+  accounting_system_access Accounting_Access_Users[]    @relation("UsersAccessAccounting")
+  transactions_created     Transactions[]               @relation("UserRecordTransaction")
+  transactions_updated     Transactions[]               @relation("UserUpdatedTransaction")
+  active_account           Boolean                      @default(true)
+  profile_complete         Boolean                      @default(false)
+  created_at               DateTime                     @default(now())
+  updated_at               DateTime                     @updatedAt
 }
 
 model Companies_Agents {
@@ -101,6 +249,7 @@ model Companies_Agents {
   relationship_status String // the main admin of the company will determine who has the full authorization and who hasnot
   notes               String?
   salary              Float
+  active              Boolean   @default(false)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
