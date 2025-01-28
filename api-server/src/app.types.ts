@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 import * as express from 'express';
-import { Companies, Companies_Agents, Users } from "@prisma/client";
+import { Companies, Companies_Agents, Transactions, Users } from "@prisma/client";
 
 
 
@@ -20,7 +20,10 @@ declare global {
             company: {
                valid_account: boolean;
             }
-         }
+         };
+         transaction_category?: ("assets" | "liabilities");
+         invoice_url?: string;
+         transaction?: Transactions
       }
    }
 }

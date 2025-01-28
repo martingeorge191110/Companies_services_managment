@@ -44,7 +44,7 @@ app.use(morgan("tiny"))
 
 /* Api Routes */
 app.use("/api/companies/auth", CompanyAuthRoute) // Company Routes
-app.use("/api/admins/", AdminsRouter)
+app.use("/api/admins", AdminsRouter)
 app.use("/api/users/auth/", UserAuthRoutes)
 app.use("/api/users", UserAccoutRouter)
 app.use("/api/companies", CompaniesRoute)

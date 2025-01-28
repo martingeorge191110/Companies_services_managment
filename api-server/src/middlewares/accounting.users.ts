@@ -3,7 +3,6 @@ import { Accounting } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import ApiError from "./api.errors.ts";
 import PrismaInstance from "../prisma.db.ts";
-import { networkInterfaces } from "os";
 
 
 
@@ -28,7 +27,6 @@ export const AccountingUsersMiddleware = async (req: Request, res: Response, nex
       if (!asAgentUser && asAuthEmployee &&asAuthEmployee?.access_level < 4)
          return (next(ApiError.CreateError("Unauthorized to treat with accounting transactions!", 403, null)))
 
-      console.log(true)
       return (next())
    } catch (err) {
       return (next(ApiError.CreateError("Server error during checking the authorization of this operation!", 500, null)))
