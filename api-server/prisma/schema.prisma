@@ -107,15 +107,13 @@ model Invoices {
 }
 
 model Accounting_Assets {
-  id                   String         @id @default(uuid())
-  accounting_system_id String
+  accounting_system_id String         @id
   transactions         Transactions[] @relation("AssetsTransactions")
   accounting_system    Accounting     @relation("SystemAssets", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
 }
 
 model Accounting_Liabilities {
-  id                   String         @id @default(uuid())
-  accounting_system_id String
+  accounting_system_id String         @id
   transactions         Transactions[] @relation("LiabilitiesTransactions")
   accounting_system    Accounting     @relation("SystemLiabilities", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
 }
@@ -145,8 +143,8 @@ model Transactions {
   invoice_id       String?
   user_recorded_id String
   user_updated_id  String?
-  liability        Accounting_Liabilities? @relation("LiabilitiesTransactions", fields: [liability_id], references: [id], onDelete: Cascade)
-  assets           Accounting_Assets?      @relation("AssetsTransactions", fields: [asset_id], references: [id], onDelete: Cascade)
+  liability        Accounting_Liabilities? @relation("LiabilitiesTransactions", fields: [liability_id], references: [accounting_system_id], onDelete: Cascade)
+  assets           Accounting_Assets?      @relation("AssetsTransactions", fields: [asset_id], references: [accounting_system_id], onDelete: Cascade)
   invoice          Invoices[]              @relation("invoiceInformation")
   user_recorded    Users                   @relation("UserRecordTransaction", fields: [user_recorded_id], references: [id], onUpdate: Cascade)
   user_updated     Users?                  @relation("UserUpdatedTransaction", fields: [user_updated_id], references: [id], onUpdate: Cascade)
