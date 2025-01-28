@@ -1,7 +1,9 @@
 #!/usr/bin/env ts-node
-import { Accounting, Companies } from "@prisma/client";
-import { body, Meta, query, ValidationChain } from "express-validator";
+import { Accounting, Companies, Invoices, Transactions } from "@prisma/client";
+import { body, Meta, param, query, ValidationChain } from "express-validator";
 import PrismaInstance from "../prisma.db.ts";
+import { Request } from "express";
+import fs from 'fs';
 
 
 
@@ -68,16 +70,91 @@ class AccountingValidator {
                      if (ele === 'status' && !['Completed', 'Pending', 'Failed'].includes(val))
                         throw (new Error(`${ele} is not valid value!`))
 
-                     if (ele === 'paymentMethod' && !['Cash', 'Credit_Card', 'Debit_Card', 'Bank_Transfer', 'Digital_Wallets'].includes(val))
-                        throw (new Error(`${ele} is not valid value!`))
+                     if (ele === 'paymentMethod') {
+                        const methods = ['Cash', 'Credit_Card', 'Debit_Card', 'Bank_Transfer', 'Digital_Wallets']
+                        if (!methods.includes(val))
+                           throw (new Error(`${ele} is not valid value!`))
+                     }
 
                      const types = ['ACCOUNTS_RECEIVABLE', 'ACCOUNTS_PAYABLE', 'CASH_FLOW', 'EXPENSES', 'REVENUES', 'FIXED_ASSETS', 'INVESTMENTS', 'LIABILITIES', 'EQUITY', 'TAX_PAYMENTS', 'MISCELLANEOUS']
-                     if (ele === 'type' && !types.includes(val))
-                        throw (new Error(`${ele} is not valid value!`))
+                     if (ele === 'type') {
+                        if (!types.includes(val))
+                           throw (new Error(`${ele} is not valid value!`))
+
+                        if ([types[0], types[4], types[5]].includes(val))
+                           req.transaction_category = 'assets'
+                        else
+                           req.transaction_category = 'liabilities'
+                     }
+
+                     return (true)
                   })
             )
          })
       ])
+   }
+
+
+   public transactionParamId = (): ValidationChain[] => {
+      return ([
+         param("transactions_id")
+            .trim().notEmpty().withMessage("Transaction id should be included in the params!")
+            .custom(async (val: string, {req}: Meta): Promise<boolean | void> => {
+               try {
+                  const transaction: (Transactions | null) = await PrismaInstance.transactions.findUnique({
+                     where: {id: val}
+                  })
+
+                  if (!transaction) {
+                     this.removeInoiceFile(req as Request)
+                     throw (new Error("No transactions found with id!"))
+                  }
+                  req.transaction = transaction
+                  return (true)
+               } catch (err) {
+                  throw (err)
+               }
+            })
+      ])
+   }
+
+
+   public invoiceValid = (): ValidationChain[] => {
+      return ([
+         body("invoice_number")
+            .trim().notEmpty().withMessage("invoice_number should be included!").isString().withMessage("invoice_number must be a string!")
+            .custom(async (val: string, {req}: Meta): Promise<boolean | void> => {
+               try {
+                  const invoice: (Invoices | null) = await PrismaInstance.invoices.findUnique({
+                     where: {invoice_number: val}
+                  })
+
+                  if (invoice) {
+                     this.removeInoiceFile(req as Request)
+                     throw (new Error("Invoice Number must be unique number!"))
+                  }
+                  return (true)
+               } catch (err) {
+                  throw (err)
+               }
+            })
+      ])
+   }
+
+   public createInvoiceValid = (): ValidationChain[] => {
+      return ([
+         ...this.transactionParamId(), ...this.invoiceValid()
+      ])
+   }
+
+   public removeInoiceFile = (req: Request) => {
+      const invoice = req.file
+
+      if (!invoice)
+         return (true)
+
+      fs.unlinkSync(invoice.path )
+      return (true)
    }
 }
 
