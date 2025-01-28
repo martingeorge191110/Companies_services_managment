@@ -44,3 +44,35 @@ export const uploadAvatars = async (req: Request, res: Response, next: NextFunct
       return (next(ApiError.CreateError("cloudinary server error during upload the photo", 500, null)))
    }
 }
+
+
+export const uploadInvoices = async (req: Request, res: Response, next: NextFunction) => {
+   const invoice = req.file
+
+   if (!invoice) {
+      return (next(ApiError.CreateError("No Files have been uploaded!", 400, null)))
+   }
+
+   try {
+      const data = await fs.readFile(invoice.path)
+
+      const result = await new Promise((resolve, reject) => {
+         const stream = cloudinary.uploader.upload_stream(
+            { resource_type: invoice.mimetype.startsWith("image/") ? "image" : "raw", folder: 'invoices' },
+            (error, result) => {
+               if (error)
+                  if (error) return reject(error);
+                  resolve (result);
+            }
+         );
+         stream.end(data);
+      })
+      req.invoice_url = (result as any).secure_url
+
+      await fs.unlink(invoice.path)
+      return (next())
+   } catch (err) {
+      console.log(err)
+      return (next(ApiError.CreateError("cloudinary server error during upload the photo", 500, null)))
+   }
+}
