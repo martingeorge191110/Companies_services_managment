@@ -11,7 +11,7 @@ function App() {
       <Navbar />
       <BrowserRouter>
         <Switch >
-          
+          <HomePage />
         </Switch>
       </BrowserRouter>
     </>
