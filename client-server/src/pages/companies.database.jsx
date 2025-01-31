@@ -10,11 +10,18 @@ import {
 } from "react-icons/fa";
 import { CompaniesDatabaseApi } from "../services/companies";
 import { useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
+import LoadingPage from "./loading";
 
 const CompaniesDatabase = () => {
   const token = useSelector((state) => state.user.token);
   const [companies, setCompanies] = useState(null);
   const [showCreateCompany, setShowCreateCompany] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(true)
+
+
+  const history = useHistory()
 
   // Function to handle creating a new company
   const handleCreateCompany = () => {
@@ -26,14 +33,16 @@ const CompaniesDatabase = () => {
     if (!companies) {
       CompaniesDatabaseApi(token)
         .then((res) => {
-          console.log(res.data);
           if (res.success) setCompanies(res.data);
+          setIsLoading(false)
         })
         .catch((rej) => console.log(rej));
     }
   }, [companies, token]);
 
   return (
+    <>
+    { isLoading ? <LoadingPage /> :
     <div className="min-h-screen bg-[#242424] w-screen justify-center text-white p-8">
       {/* Create Company Button */}
       <div className="flex justify-start border-b-[1px] border-solid border-white mb-8 pt-28 p-3">
@@ -49,11 +58,13 @@ const CompaniesDatabase = () => {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={handleCreateCompany}
+          onClick={() => history.push({
+            pathname: '/companies/register/'
+          })}
           className="flex items-center bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
         >
           <FaPlus className="mr-2" />
-          Create New Company
+          Start New Company
         </motion.button>
       </div>
 
@@ -210,6 +221,8 @@ const CompaniesDatabase = () => {
         )}
       </AnimatePresence>
     </div>
+    }
+    </>
   );
 };
 

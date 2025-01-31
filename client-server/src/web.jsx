@@ -3,8 +3,11 @@ import HomePage from './pages/home.page.jsx'
 import Navbar from './components/nav.bar.jsx'
 import { BrowserRouter, Route, Switch } from 'react-router-dom/cjs/react-router-dom.js'
 import CompaniesDatabase from './pages/companies.database.jsx'
+import CompanyRegister from './pages/register.company.jsx'
 
 function ServerApp() {
+
+
 
    return (
       <>
@@ -12,7 +15,8 @@ function ServerApp() {
             <Route component={Navbar} />
             <Switch >
                <Route exact path={"/companies/data-base/"} component={CompaniesDatabase} />
-               <Route exact path={"/"} component={HomePage}/>
+               <Route exact path={"/companies/register/"} component={CompanyRegister} />
+               <Route exact component={HomePage}/>
             </Switch>
          </BrowserRouter>
       </>

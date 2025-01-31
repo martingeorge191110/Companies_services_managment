@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-const url = "https://0286-197-39-174-56.ngrok-free.app"
+const url = "https://ee5c-45-243-101-20.ngrok-free.app"
 
 
 export const UserAuth = axios.create({

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom/cjs/react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FaUserCircle } from "react-icons/fa";
 
@@ -13,21 +13,23 @@ const Navbar = () => {
     setShowMenu(!showMenu);
   };
 
+  const history = useHistory()
+
 
 
   const userInfo = useSelector((state) => state.user.info);
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Category", href: "#" },
-    { name: "Collections", href: "#" },
-    { name: "Contact Us", href: "#" },
+    { name: "Category", href: "/register" },
+    { name: "Collections", href: "/" },
+    { name: "Contact Us", href: "/" },
   ];
 
   const authLinks = [
-    { name: "Try it Free", href: "#" },
+    { name: "Try it Free", href: "/" },
     { name: "Login", href: "/login" },
-    { name: "Register", href: "#" },
+    { name: "Register", href: "/register" },
   ];
 
   return (
@@ -57,9 +59,9 @@ const Navbar = () => {
         <div className="hidden xl:flex items-center space-x-6">
           {!userInfo ? (
             authLinks.map((link, index) => (
-              <a
-                key={index}
-                href={link.href}
+              <Link
+              key={index}
+                to={link.href}
                 className={`text-[1.2rem] font-semibold hover:text-gray-300 transition duration-300 ${
                   link.name === "Try it Free"
                     ? " text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
@@ -67,7 +69,7 @@ const Navbar = () => {
                 }`}
               >
                 {link.name}
-              </a>
+              </Link>
             ))
           ) : (
             <div className="flex items-center space-x-6">
@@ -168,12 +170,12 @@ const Navbar = () => {
             <ul className="p-4">
               {navLinks.map((link, index) => (
                 <li key={index}>
-                  <a
-                    href={link.href}
+                  <button
+                    onClick={() => history.push({pathname: link.href})}
                     className="block text-sm px-2 py-4 text-white hover:bg-gray-700 rounded transition duration-300"
                   >
                     {link.name}
-                  </a>
+                  </button>
                 </li>
               ))}
               {authLinks.map((link, index) => (

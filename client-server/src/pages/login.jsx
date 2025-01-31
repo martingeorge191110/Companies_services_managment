@@ -2,18 +2,17 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { LoginApi } from "../services/user.auth.jsx";
 import { useDispatch } from "react-redux";
-import { LoginAction } from "../store/actions.jsx";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.js";
-
-
+import { AuthAction } from "../store/actions.jsx";
+import { useHistory, Link} from "react-router-dom";
 
 
 
 const Login = () => {
 
   const dispatch = useDispatch()
-  const navigate = useHistory();
+  const history = useHistory();
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -54,12 +53,10 @@ const Login = () => {
         </h2>
         <p className="mt-2 text-center text-sm text-white">
           Or{" "}
-          <a
-            href="#"
-            className="font-medium ml-2 text-xl text-white hover:text-gray-300"
-          >
+          <Link to="/register"
+            className="font-medium ml-2 text-xl text-white hover:text-gray-300">
             create an account
-          </a>
+          </Link>
         </p>
       </motion.div>
 
@@ -136,29 +133,37 @@ const Login = () => {
               /* Login function */
               onClick={ async (e) => {
                 e.preventDefault();
+                setIsSubmitting(true)
                 setEmailError('');
                 setPasswordError('');
 
                 try {
                   const response = await LoginApi({"userEmail": email, "password": password})
 
+                  console.log(response)
+                  setIsSubmitting(false)
                   if (response.success) {
                     localStorage.setItem("token", response.data.token)
-                    dispatch(LoginAction(response.data))
-                    history.pushState(null, null, '/')
+                    dispatch(AuthAction(response.data))
+                    history.push({
+                      pathname: '/'
+                    })
                   } else if (response.validationErrors) {
                     setErrors(response.validationErrors)
                   } else
                     setErrors(response.message)
 
                 } catch (err) {
+                  setIsSubmitting(false)
                   throw (err)
                 }
               }}
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-md font-medium rounded-md text-white bg-gray-600 hover:bg-white hover:text-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 hover:border-gray-600"
-              >
-                Sign in
+                className={`${isSubmitting ? 'pointer-events-none' : ''}
+                group relative w-full flex justify-center py-2 px-4 border border-transparent text-md font-medium rounded-md text-white bg-gray-600 hover:bg-white hover:text-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 hover:border-gray-600`}>
+                {
+                  isSubmitting ? 'loading...' : 'Register'
+                }
               </button>
             </div>
           </form>

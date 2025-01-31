@@ -1,12 +1,16 @@
 import './App.css'
-import { BrowserRouter, Route, Switch } from 'react-router-dom/cjs/react-router-dom.js'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Login from './pages/login.jsx';
 import ServerApp from './web.jsx'
 import { useDispatch, useSelector } from 'react-redux';
 import { useLayoutEffect, useState } from 'react';
 import { ValidateTokenApi } from './services/user.auth.jsx';
 import { ValidateTokenActon } from './store/actions.jsx';
-
+import Register from './pages/register.jsx';
+import LoadingPage from './pages/loading.jsx';
+import CompaniesDatabase from './pages/companies.database.jsx';
+import HomePage from './pages/home.page.jsx';
+import Navbar from './components/nav.bar.jsx';
 
 
 function App() {
@@ -20,13 +24,23 @@ function App() {
     state => state.user.info
   )
 
+  const [isLoading, setIsLoading] = useState(true)
+
 
   useLayoutEffect( () => {
     if (!userInfo) {
         ValidateTokenApi(token).then(
-          res => res.success && dispatch(ValidateTokenActon(res.data))
+          res => {
+            if (res.success) {
+              dispatch(ValidateTokenActon(res.data))
+            }
+            setIsLoading(false)
+          }
         ).catch(
-          rej => dispatch(ValidateTokenActon(null))
+          rej => {
+            dispatch(ValidateTokenActon(null))
+            setIsLoading(false)
+          }
         )
     }
   }, [])
@@ -36,13 +50,25 @@ function App() {
 
   return (
     <>
-      <BrowserRouter>
-      {/* <Route  */}
+      <Router>
+
         <Switch >
-          <Route exact path={"/login"} component={!userInfo ? Login : ServerApp}/>
-          <Route exact component={ServerApp}/>
+          <Route exact path="/login" component={!isLoading && !userInfo ? Login : InvlaidAuth}/>
+          <Route exact path="/register" component={!isLoading && !userInfo ? Register : InvlaidAuth}/>
+          { isLoading ? <LoadingPage/> : userInfo ? <ServerApp/> : <InvlaidAuth/>}
         </Switch>
-      </BrowserRouter>
+      </Router>
+    </>
+  )
+}
+
+
+const InvlaidAuth = () => {
+
+  return (
+    <>
+        <Navbar />
+        <HomePage />
     </>
   )
 }
