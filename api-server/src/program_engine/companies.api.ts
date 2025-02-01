@@ -135,7 +135,16 @@ ${empStr.length > 3 ? '\t\t' : ''}${empStr}${empStr.length > 3 ? '\n' : ''}Input
             break;
          }
 
+         switch (input) {
+            case '1':
 
+               break;
+            default:
+               console.log("#".repeat(17))
+               console.log("Unknown input!")
+               console.log("#".repeat(17))
+               console.log('')
+         }
       }
    }
 
