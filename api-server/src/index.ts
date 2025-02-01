@@ -14,7 +14,7 @@ import UserAuthRoutes from './routes/users.auth.routes.ts';
 import UserAccoutRouter from './routes/users.routes.ts';
 import { socketInitialize } from './socket.io.ts';
 import CompaniesRoute from './routes/companies.route.ts';
-
+// import {createClient} from 'redis';
 
 
 dotenv.config()
@@ -23,6 +23,23 @@ const env:NodeJS.ProcessEnv = process.env
 const app = express()
 const server = http.createServer(app)
 export const socketIo = socketInitialize(server)
+// export const redisState = createClient({
+//    socket: {
+//       host: '127.0.0.1',
+//       port: 6379
+//    }
+// })
+
+// async function connectRedis() {
+//    try {
+//       await redisState.connect();
+//       console.log("✅ Redis is connected now");
+//    } catch (error) {
+//       console.error("❌ Redis connection error:", error);
+//    }
+// }
+
+// connectRedis();
 
 
 const allowedOrigins = [

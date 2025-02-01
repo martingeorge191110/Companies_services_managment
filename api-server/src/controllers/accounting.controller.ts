@@ -1,12 +1,12 @@
 #!/usr/bin/env ts-node
 import { NextFunction, Response, Request } from "express";
 import AccountingValidator from "../validators/accounting.validator.ts";
-import { Admins, Companies, Invoices, Transactions } from "@prisma/client";
+import { Accounting_Assets, Admins, Companies, Invoices, Transactions } from "@prisma/client";
 import ApiError from "../middlewares/api.errors.ts";
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
 import { decrypting, encryptObject } from "../utilies/encrypt.dcrypt.ts";
-import { Public } from "@prisma/client/runtime/library";
+
 
 
 
@@ -58,12 +58,75 @@ class AccountinController extends AccountingValidator {
    }
 
 
+   public OverviewGraph = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const system_id = (req as any).accounting.company_id
+
+      const currYear = new Date().getFullYear();
+      const firstDayOfYear = new Date(currYear, 0, 1)
+
+      let result: {month: string, revenue: number, expenses: number, balance: number}[] = [];
+      const currMonth = new Date().getMonth()+1
+      const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+         ]
+
+      months.forEach((ele, i) => {
+         if (i < currMonth)
+            result[i] = {month: ele, revenue: 0, expenses: 0, balance: 0}
+      })
+
+      try {
+         const revenues = await PrismaInstance.accounting_Assets.findUnique({
+            where: {accounting_system_id: system_id},
+            select: {
+               transactions: {
+                  where: {createdAt: {gte: firstDayOfYear}},
+                  select: {actual_amount: true, createdAt: true}
+               }
+            }
+         })
+
+         const expenses = await PrismaInstance.accounting_Liabilities.findUnique({
+            where: {accounting_system_id: system_id},
+            select: {
+               transactions: {
+                  where: {createdAt: {gte: firstDayOfYear}},
+                  select: {actual_amount: true, createdAt: true}
+               }
+            }
+         })
+
+         if (revenues?.transactions) {
+            for (const ele of revenues.transactions) {
+               const transMonth: number = ele.createdAt.getMonth();
+               result[transMonth].revenue += Number(ele.actual_amount);
+            }
+         }
+
+         if (expenses?.transactions) {
+            for (const ele of expenses.transactions) {
+               const transMonth: number = ele.createdAt.getMonth();
+               result[transMonth].expenses += Number(ele.actual_amount);
+            }
+         }
+
+         result.forEach((ele) => {
+            ele.balance = ele.revenue - ele.expenses
+         })
+      } catch (err) {
+         return (next(ApiError.CreateError("Server error during retreiving Graph Information!", 500, null)))
+      }
+
+      return (SuccessfulyResponse(res, "Successfuly Response with graph!", {result}))
+   }
+
 
    public Transaction = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       const userId: string = (req as any).id
-      const accounting = req.accounting
+      const accounting = (req as any).accounting
       const body = req.body
-      const category = req.transaction_category
+      const category = (req as any).transaction_category
 
       const encryptBody = encryptObject(body)
       const obligatories = {customer_name: encryptBody.customer_name, customer_email: encryptBody.customer_email, customer_phone_number: encryptBody.customer_phone_number}
@@ -102,9 +165,9 @@ class AccountinController extends AccountingValidator {
 
    public AddInvoices = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       const id = (req as any).id
-      const transaction: (Transactions | null) = req.transaction || null
+      const transaction = (req as any).transaction
       const { invoice_number } = req.body
-      const invoice_url = req.invoice_url
+      const invoice_url = (req as any).invoice_url
 
       if (!invoice_url || !transaction)
          return (next(ApiError.CreateError("Cannot upload your Invoice file or image", 400, null)))
@@ -137,7 +200,7 @@ class AccountinController extends AccountingValidator {
 
    public OneInvoice = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       const {invoice_id} = req.query
-      const transaction = req.transaction
+      const transaction = (req as any).transaction
 
       try {
          const invoice: (Invoices | null) = await PrismaInstance.invoices.findUnique({

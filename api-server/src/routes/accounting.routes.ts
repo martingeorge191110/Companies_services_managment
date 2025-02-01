@@ -23,6 +23,12 @@ AccountingRoute.route("/register/")
             .post(accountingInstance.createAccountValid(), ValidationError, accountingInstance.CreateAccount)
 
 
+
+AccountingRoute.route("/main-graph/")
+            .all(accountingInstance.systemIdValid(), ValidationError, AccountingUsersMiddleware)
+            .get(accountingInstance.OverviewGraph)
+
+
 /**
  * company_id: must be included as query
  * ALL - Middlewares that validate the accoutning system id && sure about whether user is authorized

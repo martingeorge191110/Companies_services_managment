@@ -151,6 +151,18 @@ model Transactions {
 
   accounting_system_id String
   accounting_system    Accounting @relation("SystemTransactions", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
+  Journal_Entries Journal_Entries?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Journal_Entries {
+  id String @id @default(uuid())
+
+  description       String?
+  transaction_id String
+  transaction    Transactions @relation(fields: [id], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

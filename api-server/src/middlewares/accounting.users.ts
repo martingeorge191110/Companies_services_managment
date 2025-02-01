@@ -15,6 +15,7 @@ export const AccountingUsersMiddleware = async (req: Request, res: Response, nex
       const asAgentUser = await PrismaInstance.companies_Agents.findUnique({
          where: {agent_id_company_id: {company_id: accounting.company_id, agent_id: id}}
       })
+
       const asAuthEmployee = await PrismaInstance.companies_System_Employees.findUnique({
          where: {
             employee_id_company_id: {company_id: accounting.company_id, employee_id:id}
