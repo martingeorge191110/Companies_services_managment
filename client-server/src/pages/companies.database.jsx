@@ -87,6 +87,7 @@ const CompaniesDatabase = () => {
                 history.push({
                   pathname: `/companies/dashboard/${company.company.id}`,
                   state: {
+                    id: company.company.id,
                     avatar: company.company.avatar,
                     name: company.company.name,
                     specialize: company.company.specialize,
