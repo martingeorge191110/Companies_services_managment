@@ -6,6 +6,7 @@ import ApiError from "../middlewares/api.errors.ts";
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
 import { decrypting, encryptObject } from "../utilies/encrypt.dcrypt.ts";
+import { Public } from "@prisma/client/runtime/library";
 
 
 
@@ -130,6 +131,32 @@ class AccountinController extends AccountingValidator {
          return (SuccessfulyResponse(res, "Successfuly creating new invoice!", {...invoice, ...dcryptResult}))
       } catch (err) {
          return (next(ApiError.CreateError("Server error during creating an invoice for transaction!", 500, null)))
+      }
+   }
+
+
+   public OneInvoice = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const {invoice_id} = req.query
+      const transaction = req.transaction
+
+      try {
+         const invoice: (Invoices | null) = await PrismaInstance.invoices.findUnique({
+            where: {
+               id: invoice_id as string, transaction_id: transaction?.id
+            }
+         })
+
+         if (!invoice)
+            return (next(ApiError.CreateError("Invoice not found!", 404, null)))
+
+         const dcrypted = {
+            invoice_number: decrypting(invoice.invoice_number),
+            invoiceLink: decrypting(invoice.invoiceLink as string)
+         }
+
+         return (SuccessfulyResponse(res, "Successfuly invoice retreived!", {...invoice, ...dcrypted}))
+      } catch (err) {
+         return (next(ApiError.CreateError("Server error during retreiving the invoice details!", 500, null)))
       }
    }
 }

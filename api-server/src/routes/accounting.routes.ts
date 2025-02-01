@@ -24,6 +24,7 @@ AccountingRoute.route("/register/")
 
 
 /**
+ * company_id: must be included as query
  * ALL - Middlewares that validate the accoutning system id && sure about whether user is authorized
  * POST - Create a transaction
  */
@@ -32,13 +33,21 @@ AccountingRoute.route("/transaction/")
             .post(accountingInstance.isTransactionValid(), ValidationError, accountingInstance.Transaction)
 
 
-
-AccountingRoute.route("/invoice/:transactions_id/:invoice_id/")
+/**
+ * company_id: must be included as query
+ * transactions_id: should be in query
+ * invoice_id: should be in query
+ * 
+ * POST: Add one invoice to a transaction
+ * GET: just get one invoice details
+ */
+AccountingRoute.route("/invoice/")
             .all(accountingInstance.systemIdValid(), ValidationError, AccountingUsersMiddleware)
             .post(
                uploader("invoices").single("invoice"), accountingInstance.createInvoiceValid(), ValidationError,
                uploadInvoices,accountingInstance.AddInvoices
             )
+            .get(accountingInstance.invoiceRetreivingValid(), ValidationError, accountingInstance.OneInvoice)
 
 
 export default AccountingRoute;

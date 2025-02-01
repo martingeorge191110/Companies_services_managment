@@ -25,10 +25,23 @@ const server = http.createServer(app)
 export const socketIo = socketInitialize(server)
 
 
+const allowedOrigins = [
+   "http://localhost:5173",
+   "http://127.0.0.1:5173",
+   "https://ee5c-45-243-101-20.ngrok-free.app"
+];
+
+
 /* Main application middlewares */
 app.use(cors({
-   origin: env.NODE_ENV === "development" ? "*" : undefined as (string | undefined),
-   credentials: false as boolean
+   origin: (origin, callback) => {
+      if (allowedOrigins.includes(origin as string) || !origin) {
+         callback(null, true);
+      } else {
+         callback(new Error('Not allowed by CORS'));
+      }
+   },
+   credentials: true
 }))
 
 app.use("/api/stripe", WebhookRoute)
@@ -45,7 +58,7 @@ app.use(morgan("tiny"))
 /* Api Routes */
 app.use("/api/companies/auth", CompanyAuthRoute) // Company Routes
 app.use("/api/admins", AdminsRouter)
-app.use("/api/users/auth/", UserAuthRoutes)
+app.use("/api/users/auth", UserAuthRoutes)
 app.use("/api/users", UserAccoutRouter)
 app.use("/api/companies", CompaniesRoute)
 

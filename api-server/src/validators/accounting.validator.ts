@@ -97,18 +97,24 @@ class AccountingValidator {
 
    public transactionParamId = (): ValidationChain[] => {
       return ([
-         param("transactions_id")
-            .trim().notEmpty().withMessage("Transaction id should be included in the params!")
+         query("transactions_id")
+            .trim().notEmpty().withMessage("Transaction id should be included in the Request query!")
             .custom(async (val: string, {req}: Meta): Promise<boolean | void> => {
                try {
+                  const system: Record<string, (string | null)> = {}
+
+                  if (req.accounting.company_id)
+                     system.accounting_system_id = req.accounting.company_id
+
                   const transaction: (Transactions | null) = await PrismaInstance.transactions.findUnique({
-                     where: {id: val}
+                     where: {id: val, ...system}
                   })
 
                   if (!transaction) {
                      this.removeInoiceFile(req as Request)
                      throw (new Error("No transactions found with id!"))
                   }
+
                   req.transaction = transaction
                   return (true)
                } catch (err) {
@@ -144,6 +150,16 @@ class AccountingValidator {
    public createInvoiceValid = (): ValidationChain[] => {
       return ([
          ...this.transactionParamId(), ...this.invoiceValid()
+      ])
+   }
+
+
+
+   public invoiceRetreivingValid = (): ValidationChain[] => {
+      return ([
+         ...this.transactionParamId(),
+         query("invoice_id")
+            .trim().notEmpty().withMessage("Invoice id is required in params!")
       ])
    }
 

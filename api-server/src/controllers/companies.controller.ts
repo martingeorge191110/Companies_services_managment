@@ -21,7 +21,7 @@ class CompaniesController extends CompaniesValidator {
             where: {agent_id: userId},
             select: {
                company: {
-                  select: {id: true, name: true, avatar: true}
+                  select: {id: true, name: true, avatar: true, specialize: true, business_type: true, valid_account: true}
                }
             }
          })
@@ -30,7 +30,7 @@ class CompaniesController extends CompaniesValidator {
             where: {employee_id: userId},
             select: {
                company: {
-                  select: {id: true, name: true, avatar: true}
+                  select: {id: true, name: true, avatar: true, specialize: true, business_type: true, valid_account: true}
                }
             }
          })
