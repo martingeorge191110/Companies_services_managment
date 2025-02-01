@@ -8,9 +8,11 @@ import { ValidateTokenApi } from './services/user.auth.jsx';
 import { ValidateTokenActon } from './store/actions.jsx';
 import Register from './pages/register.jsx';
 import LoadingPage from './pages/loading.jsx';
-import CompaniesDatabase from './pages/companies.database.jsx';
 import HomePage from './pages/home.page.jsx';
 import Navbar from './components/nav.bar.jsx';
+
+
+
 
 
 function App() {

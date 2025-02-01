@@ -83,6 +83,17 @@ const CompaniesDatabase = () => {
           {companies && companies.agentCompanies.length > 0 ? (
             companies.agentCompanies.map((company) => (
               <motion.div
+              onClick={() => {
+                history.push({
+                  pathname: `/companies/dashboard/${company.company.id}`,
+                  state: {
+                    avatar: company.company.avatar,
+                    name: company.company.name,
+                    specialize: company.company.specialize,
+                    business_type: company.company.business_type,
+                  }
+                })
+              }}
                 key={company.company.id}
                 whileHover={{ scale: 1.02 }}
                 className="bg-[#333333] cursor-pointer p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300"

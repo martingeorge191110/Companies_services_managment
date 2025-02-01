@@ -21,12 +21,12 @@ const HomePage = () => {
     <div className=" w-screen bg font-sans">
 
 
-      {/* /* Hero Section */ }
+      {/* /* Hero Section */}
       <HeroSection />
-      
+
       {/* Services Section */}
       <ServicesSection />
-      
+
       {/* Footer */}
       <FootBar />
     </div>

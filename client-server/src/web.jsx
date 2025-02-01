@@ -4,6 +4,7 @@ import Navbar from './components/nav.bar.jsx'
 import { BrowserRouter, Route, Switch } from 'react-router-dom/cjs/react-router-dom.js'
 import CompaniesDatabase from './pages/companies.database.jsx'
 import CompanyRegister from './pages/register.company.jsx'
+import CompanyDashboard from './pages/company.dashboard.jsx'
 
 function ServerApp() {
 
@@ -16,6 +17,7 @@ function ServerApp() {
             <Switch >
                <Route exact path={"/companies/data-base/"} component={CompaniesDatabase} />
                <Route exact path={"/companies/register/"} component={CompanyRegister} />
+               <Route exact path={"/companies/dashboard/:id"} component={CompanyDashboard} />
                <Route exact component={HomePage}/>
             </Switch>
          </BrowserRouter>
