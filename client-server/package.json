@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "proxy": "https://ee5c-45-243-101-20.ngrok-free.app",
+  "proxy": "http://localhost:8000",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -18,6 +18,7 @@
     "react-icons": "^5.4.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^5.3.4",
+    "recharts": "^2.15.1",
     "redux": "^5.0.1"
   },
   "devDependencies": {
