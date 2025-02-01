@@ -13,3 +13,9 @@ export const ValidateTokenActon = (payload) => {
       type: "ACCOUNT_VALIDATION", payload
    })
 }
+
+export const mainGraphAccountingAction = (payload) => {
+   return ({
+      type: "MAIN_GRAPH", payload
+   })
+}

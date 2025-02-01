@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-const url = "https://ee5c-45-243-101-20.ngrok-free.app"
+const url = "http://localhost:8000"
 
 
 export const UserAuth = axios.create({

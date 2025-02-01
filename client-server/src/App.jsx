@@ -10,6 +10,7 @@ import Register from './pages/register.jsx';
 import LoadingPage from './pages/loading.jsx';
 import HomePage from './pages/home.page.jsx';
 import Navbar from './components/nav.bar.jsx';
+import AccountingSystem from './pages/accounting.dashboard.jsx';
 
 
 

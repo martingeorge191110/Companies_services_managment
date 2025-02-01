@@ -6,6 +6,11 @@ const USER = {
    info: null
 }
 
+const COMPANY = {
+   accounting: {
+      mainGraph: null
+   }
+}
 
 const UserReducer = (state = USER, action) => {
    if (action.type === 'AUTH')
@@ -20,8 +25,20 @@ const UserReducer = (state = USER, action) => {
 }
 
 
+const CompanyReducer = (state = COMPANY, action) => {
+   if (action.type === 'MAIN_GRAPH')
+      return ({
+         ...state, accounting: {
+               ...state.accounting, mainGraph: action.payload
+            }
+         })
+
+   return (state)
+}
+
 const Reducers = combineReducers({
-   user: UserReducer
+   user: UserReducer,
+   company: CompanyReducer
 })
 
 
