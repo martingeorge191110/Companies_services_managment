@@ -7,6 +7,7 @@ import PrismaInstance from "../prisma.db.ts";
 
 
 
+
 export const AccountingUsersMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
    const id = (req as any).id
    const accounting: Accounting = (req as any).accounting
@@ -15,17 +16,25 @@ export const AccountingUsersMiddleware = async (req: Request, res: Response, nex
       const asAgentUser = await PrismaInstance.companies_Agents.findUnique({
          where: {agent_id_company_id: {company_id: accounting.company_id, agent_id: id}}
       })
+      
+      if (asAgentUser)
+         return (next())
 
       const asAuthEmployee = await PrismaInstance.companies_System_Employees.findUnique({
          where: {
             employee_id_company_id: {company_id: accounting.company_id, employee_id:id}
-         }, select: {access_level: true}
+         }, select: {
+            access_systems: {
+               select: {system: true}
+            }
+         }
       })
 
       if (!asAgentUser && !asAuthEmployee)
          return (next(ApiError.CreateError("Unauthorized to treat with accounting transactions!", 403, null)))
 
-      if (!asAgentUser && asAuthEmployee &&asAuthEmployee?.access_level < 4)
+      const systemsLen = asAuthEmployee?.access_systems.length
+      if (!asAgentUser && systemsLen && systemsLen > 0 && asAuthEmployee.access_systems.some((ele) => ele.system === 'Accounting'))
          return (next(ApiError.CreateError("Unauthorized to treat with accounting transactions!", 403, null)))
 
       return (next())
