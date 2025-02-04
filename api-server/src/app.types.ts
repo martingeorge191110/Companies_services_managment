@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 import * as express from 'express';
-import { Companies, Companies_Agents, Transactions, Users } from "@prisma/client";
+import { $Enums, Companies, Companies_Agents, Transactions, Users } from "@prisma/client";
 
 
 
@@ -23,7 +23,9 @@ declare global {
          };
          transaction_category?: ("assets" | "liabilities");
          invoice_url?: string;
-         transaction?: Transactions
+         transaction?: Transactions;
+         agent?: boolean;
+         employee_systems?: $Enums.CompaniesSystems[]
       }
    }
 }
