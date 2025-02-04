@@ -16,11 +16,16 @@ class CompaniesValidator {
             .custom(async (val: string, {req}: Meta): Promise<boolean | void> => {
                try {
                   const company: (Companies | null) = await PrismaInstance.companies.findUnique({
-                     where: {id: val}
+                     where: {id: val},
                   })
                   
                   if (!company)
                      throw (new Error("Company is not found"))
+
+                  const currentDate = new Date()
+
+                  if (company.account_exp_date && company.account_exp_date < currentDate)
+                     throw (new Error("Company subiscription is not valid any more, please update or contact with company agent to update your subiscription to make it easy to access Your company Dashbooard!"))
 
                   req.company = company
                   return (true)

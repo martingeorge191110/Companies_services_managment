@@ -35,3 +35,15 @@ export const SuccessfulyResponse = (res: Response, message: string, data: object
       data: data
    })
 }
+
+export const monthDaysArr = (start: number, end: number) => {
+   let result: {day: string, revenue: number, expenses: number, balance: number}[] = [];
+
+   for (let i = start; i <= end; i++) {
+      result.push({
+         day: String(i), revenue: 0, expenses: 0, balance: 0
+      })
+   }
+
+   return (result)
+}
