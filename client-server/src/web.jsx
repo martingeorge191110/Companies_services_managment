@@ -6,6 +6,7 @@ import CompaniesDatabase from './pages/companies.database.jsx'
 import CompanyRegister from './pages/register.company.jsx'
 import CompanyDashboard from './pages/company.dashboard.jsx'
 import AccountingSystem from './pages/accounting.dashboard.jsx'
+import TransactionManagementPage from './pages/accounting.transactions.jsx'
 
 function ServerApp() {
 
@@ -20,6 +21,7 @@ function ServerApp() {
                <Route exact path={"/companies/register/"} component={CompanyRegister} />
                <Route exact path={"/companies/dashboard/:id"} component={CompanyDashboard} />
                <Route exact path={"/companies/accounting/:id"} component={AccountingSystem}/>
+               <Route exact path={"/companies/accounting/transactions/:id"} component={TransactionManagementPage}/>
                <Route exact component={HomePage}/>
             </Switch>
          </BrowserRouter>
