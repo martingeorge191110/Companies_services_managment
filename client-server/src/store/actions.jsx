@@ -14,8 +14,22 @@ export const ValidateTokenActon = (payload) => {
    })
 }
 
+/**
+ * 
+ * Payload: {id, result} 
+ */
 export const mainGraphAccountingAction = (payload) => {
    return ({
       type: "MAIN_GRAPH", payload
+   })
+}
+
+/**
+ * 
+ * Payload: {id, result} 
+ */
+export const dailyGraphAccountingAction = (payload) => {
+   return ({
+      type: "DAILY_GRAPH", payload
    })
 }

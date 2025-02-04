@@ -6,9 +6,10 @@ const USER = {
    info: null
 }
 
-const COMPANY = {
+const COMPANIES = {
    accounting: {
-      mainGraph: null
+      mainGraphs: {},
+      dailyGraphs: {}
    }
 }
 
@@ -25,13 +26,25 @@ const UserReducer = (state = USER, action) => {
 }
 
 
-const CompanyReducer = (state = COMPANY, action) => {
+const CompanyReducer = (state = COMPANIES, action) => {
    if (action.type === 'MAIN_GRAPH')
       return ({
          ...state, accounting: {
-               ...state.accounting, mainGraph: action.payload
+               ...state.accounting, mainGraphs: {
+                  ...state.accounting.mainGraphs,
+                  [`${action.payload.id}`]: action.payload.result
+               }
             }
          })
+   if (action.type === 'DAILY_GRAPH')
+      return ({
+         ...state, accounting: {
+            ...state.accounting, dailyGraphs: {
+               ...state.accounting.mainGraphs,
+               [`${action.payload.id}`]: action.payload.result
+            }
+         }
+      })
 
    return (state)
 }
