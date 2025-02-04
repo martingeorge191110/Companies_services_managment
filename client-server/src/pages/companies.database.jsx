@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaBuilding,
@@ -29,11 +29,12 @@ const CompaniesDatabase = () => {
     console.log("Redirect to company creation page");
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!companies) {
       CompaniesDatabaseApi(token)
         .then((res) => {
           if (res.success) setCompanies(res.data);
+          console.log(res)
           setIsLoading(false)
         })
         .catch((rej) => console.log(rej));
