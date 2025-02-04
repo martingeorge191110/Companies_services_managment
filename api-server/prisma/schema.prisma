@@ -81,15 +81,15 @@ enum AccountType {
 }
 
 model Accounting {
-  company_id String @id
+  company_id String @id @unique
 
   tax_rate  Float?
   is_active Boolean @default(true)
 
   access_users Accounting_Access_Users[] @relation("AccountingAccessUsers")
   transaction  Transactions[]            @relation("SystemTransactions")
-  assets       Accounting_Assets[]       @relation("SystemAssets")
-  liabilities  Accounting_Liabilities[]  @relation("SystemLiabilities")
+  assets       Accounting_Assets?        @relation("SystemAssets")
+  liabilities  Accounting_Liabilities?   @relation("SystemLiabilities")
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -108,12 +108,18 @@ model Invoices {
 
 model Accounting_Assets {
   accounting_system_id String         @id
+  current_month_rate   Float          @default(0)
+  prev_month_rate      Float          @default(0)
+  rates_update         DateTime       @default(now())
   transactions         Transactions[] @relation("AssetsTransactions")
-  accounting_system    Accounting     @relation("SystemAssets", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
+  accounting_system    Accounting     @relation("SystemAssets", fields: [accounting_system_id], references: [company_id])
 }
 
 model Accounting_Liabilities {
   accounting_system_id String         @id
+  current_month_rate   Float          @default(0)
+  prev_month_rate      Float          @default(0)
+  rates_update         DateTime       @default(now())
   transactions         Transactions[] @relation("LiabilitiesTransactions")
   accounting_system    Accounting     @relation("SystemLiabilities", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
 }
@@ -150,17 +156,17 @@ model Transactions {
   user_updated     Users?                  @relation("UserUpdatedTransaction", fields: [user_updated_id], references: [id], onUpdate: Cascade)
 
   accounting_system_id String
-  accounting_system    Accounting @relation("SystemTransactions", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
-  Journal_Entries Journal_Entries?
+  accounting_system    Accounting       @relation("SystemTransactions", fields: [accounting_system_id], references: [company_id], onDelete: Cascade)
+  Journal_Entries      Journal_Entries?
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Journal_Entries {
   id String @id @default(uuid())
 
-  description       String?
+  description    String?
   transaction_id String
   transaction    Transactions @relation(fields: [id], references: [id], onDelete: Cascade)
 
@@ -269,28 +275,49 @@ model Companies_Agents {
 model Companies_System_Employees {
   employee_id String
   company_id  String
-  agent       Users     @relation("companySystemEmployee", fields: [employee_id], references: [id], onUpdate: Cascade)
+  employee    Users     @relation("companySystemEmployee", fields: [employee_id], references: [id], onUpdate: Cascade)
   company     Companies @relation("companySystemEmployee", fields: [company_id], references: [id], onUpdate: Cascade)
 
   role            String
   start_date      DateTime?
   end_date        DateTime?
-  status          Employees_Status         @default(Active)
-  access_level    Int // Level of Authorization out of 10
+  status          Employees_Status           @default(Active)
+  access_systems  Employees_Systems_Access[] @relation("EmployeeLevelOfAccess")
   department      String?
   location        String?
   salary          Float?
   bonus           Float?
   contract_type   Employees_Contract_Type?
   rating          Int?
-  notes           String                   @db.VarChar(1024)
+  notes           String                     @db.VarChar(1024)
   holidays        Int?
   taken_holidays  Int?
-  deducted_amount Float                    @default(0)
-  created_at      DateTime                 @default(now())
-  updated_at      DateTime                 @updatedAt
+  deducted_amount Float                      @default(0)
+  created_at      DateTime                   @default(now())
+  updated_at      DateTime                   @updatedAt
 
   @@unique([employee_id, company_id], map: "employees_companies_system_ids")
+}
+
+model Employees_Systems_Access {
+  employee_id String
+  company_id  String
+  system      CompaniesSystems
+
+  employee Companies_System_Employees @relation("EmployeeLevelOfAccess", fields: [employee_id, company_id], references: [employee_id, company_id])
+
+  @@id([employee_id, company_id])
+}
+
+enum CompaniesSystems {
+  Accounting
+  Employee_Data_Management
+  Financial_System
+  Data_Analysis_System
+  Inventory_Management
+  Project_Management
+  Reports_System
+  Documents_System
 }
 
 model Companies_Recorded_Employees {
