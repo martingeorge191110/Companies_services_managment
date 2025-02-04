@@ -4,7 +4,7 @@ import AccountingValidator from "../validators/accounting.validator.ts";
 import { Accounting_Assets, Admins, Companies, Invoices, Transactions } from "@prisma/client";
 import ApiError from "../middlewares/api.errors.ts";
 import PrismaInstance from "../prisma.db.ts";
-import { SuccessfulyResponse } from "../utilies/global.utilies.ts";
+import { monthDaysArr, SuccessfulyResponse } from "../utilies/global.utilies.ts";
 import { decrypting, encryptObject } from "../utilies/encrypt.dcrypt.ts";
 
 
@@ -58,6 +58,65 @@ class AccountinController extends AccountingValidator {
    }
 
 
+   public DailyMonthGraph = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const system_id = (req as any).accounting.company_id
+
+      const firstDayOfMonth = new Date(
+         new Date().getUTCFullYear(), new Date().getMonth(), 1
+      )
+
+      const start = firstDayOfMonth.toString().split(" ")[2]
+      const end = new Date().toString().split(" ")[2]
+
+      const result = monthDaysArr(Number(start), Number(end))
+
+      try {
+         const revenues = await PrismaInstance.accounting_Assets.findUnique({
+            where: {accounting_system_id: system_id},
+            select: {
+               transactions: {
+                  where: {createdAt: {gte: firstDayOfMonth}, status: {in: ['Completed', 'Pending']}},
+                  select: {actual_amount: true, createdAt: true}
+               }
+            }
+         })
+
+         const expenses = await PrismaInstance.accounting_Liabilities.findUnique({
+            where: {accounting_system_id: system_id},
+            select: {
+               transactions: {
+                  where: {createdAt: {gte: firstDayOfMonth}, status: {in: ['Completed', 'Pending']}},
+                  select: {actual_amount: true, createdAt: true}
+               }
+            }
+         })
+
+         if (revenues?.transactions) {
+            for (const ele of revenues.transactions) {
+               const transPerDay: number = ele.createdAt.getDate();
+               result[transPerDay - 1].revenue += Number(ele.actual_amount);
+            }
+         }
+
+         if (expenses?.transactions) {
+            for (const ele of expenses.transactions) {
+               const transPerDay: number = ele.createdAt.getDate();
+               result[transPerDay - 1].expenses += Number(ele.actual_amount);
+            }
+         }
+
+         result.forEach((ele) => {
+            ele.balance = ele.revenue - ele.expenses
+         })
+      } catch (err) {
+         console.log(err)
+         return (next(ApiError.CreateError("Server error during retreiving daily month graph Information!", 500, null)))
+      }
+
+      return (SuccessfulyResponse(res, "Successfuly Response with graph!", {result, system_id}))
+   }
+
+
    public OverviewGraph = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       const system_id = (req as any).accounting.company_id
 
@@ -81,7 +140,7 @@ class AccountinController extends AccountingValidator {
             where: {accounting_system_id: system_id},
             select: {
                transactions: {
-                  where: {createdAt: {gte: firstDayOfYear}},
+                  where: {createdAt: {gte: firstDayOfYear}, status: {in: ['Completed', 'Pending']}},
                   select: {actual_amount: true, createdAt: true}
                }
             }
@@ -91,7 +150,7 @@ class AccountinController extends AccountingValidator {
             where: {accounting_system_id: system_id},
             select: {
                transactions: {
-                  where: {createdAt: {gte: firstDayOfYear}},
+                  where: {createdAt: {gte: firstDayOfYear}, status: {in: ['Completed', 'Pending']}},
                   select: {actual_amount: true, createdAt: true}
                }
             }
@@ -118,7 +177,42 @@ class AccountinController extends AccountingValidator {
          return (next(ApiError.CreateError("Server error during retreiving Graph Information!", 500, null)))
       }
 
-      return (SuccessfulyResponse(res, "Successfuly Response with graph!", {result}))
+      return (SuccessfulyResponse(res, "Successfuly Response with graph!", {result, system_id}))
+   }
+
+
+   public AccountingBalanceEquation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const system_id = (req as any).accounting.company_id
+
+      try {
+         const assets = await PrismaInstance.transactions.aggregate({
+            where: {accounting_system_id: system_id, asset_id: system_id, status: {in: ['Completed', 'Pending']}},
+            _sum: {actual_amount: true}
+         })
+
+         const liabilities = await PrismaInstance.transactions.aggregate({
+            where: {accounting_system_id: system_id, liability_id: system_id, status: {in: ['Completed', 'Pending']}},
+            _sum: {actual_amount: true}
+         })
+
+         const system = await PrismaInstance.accounting.findUnique({
+            where: {company_id: system_id},
+            select: {
+               assets: {select: {current_month_rate: true, prev_month_rate: true}},
+               liabilities: {select: {current_month_rate: true, prev_month_rate: true}},
+            }
+         })
+
+         const equity = Number(assets._sum.actual_amount) - Number(liabilities._sum.actual_amount)
+         const equityRates = { current_month_rate: Number(system?.assets?.current_month_rate) - Number(system?.liabilities?.current_month_rate),
+                                 prev_month_rate: Number(system?.assets?.prev_month_rate) - Number(system?.liabilities?.prev_month_rate) }
+
+         return (SuccessfulyResponse(res, "SuccessfulyResponse", {assets: {total: Number(assets._sum.actual_amount), rates: system?.assets},
+                           liabilities: {total: Number(liabilities._sum.actual_amount), rates: system?.liabilities},
+                           equity: {total: equity, rates: equityRates}}))
+      } catch (err) {
+         return (next(ApiError.CreateError("Server error during retreiving Total Assets!", 500, null)))
+      }
    }
 
 
@@ -138,8 +232,12 @@ class AccountinController extends AccountingValidator {
                data: {
                   user_recorded_id: userId, asset_id: accounting?.company_id,
                   accounting_system_id: accounting?.company_id, actual_amount: body.actual_amount,
-                  ...body, ...obligatories
+                  ...body, ...obligatories, 
                }
+            })
+            await PrismaInstance.accounting_Assets.update({
+               where: {accounting_system_id: accounting.company_id},
+               data: {current_month_rate: {increment: Number(transaction.actual_amount)}}
             })
          } else {
             transaction = await PrismaInstance.transactions.create({
@@ -148,6 +246,10 @@ class AccountinController extends AccountingValidator {
                   accounting_system_id: accounting?.company_id, actual_amount: body.actual_amount,
                   ...body, ...obligatories
                }
+            })
+            await PrismaInstance.accounting_Liabilities.update({
+               where: {accounting_system_id: accounting.company_id},
+               data: {current_month_rate: {increment: Number(transaction.actual_amount)}}
             })
          }
       } catch (err) {

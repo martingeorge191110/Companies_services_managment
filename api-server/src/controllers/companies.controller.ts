@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import CompaniesValidator from "../validators/companies.validator";
 import ApiError from "../middlewares/api.errors.ts";
-import { Companies, Companies_Agents, Prisma, Users } from "@prisma/client";
+import { $Enums, Companies, Companies_Agents, Prisma, Users } from "@prisma/client";
 import PrismaInstance from "../prisma.db.ts";
 import { SuccessfulyResponse } from "../utilies/global.utilies";
 
@@ -43,14 +43,14 @@ class CompaniesController extends CompaniesValidator {
 
 
    public CompanyDashoard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const company: Companies = (req as any).company
-      const currentDate = new Date()
+      const isAgent: Companies = (req as any).agent
+      const asEmployee: $Enums.CompaniesSystems[] = (req as any).employee_systems
+      const systems = ['Accounting', 'Employee_Data_Management', 'Financial_System', 'Data_Analysis_System', 'Inventory_Management', 'Project_Management', 'Reports_System', 'Documents_System']
 
-      if (company.account_exp_date && company.account_exp_date < currentDate)
-         return (next(ApiError.CreateError("Your subiscription is not valid any more, please update your subiscription to make it easy to access system!", 403, null)))
-      else
-         console.log(true)
-      return (SuccessfulyResponse(res, "Successfuly retreived the company dashboard information!", {...company}))
+      if (isAgent)
+         return (SuccessfulyResponse(res, "Successfuly retreived the company dashboard information!", {systems}))
+
+      return (SuccessfulyResponse(res, "Successfuly retreived the company dashboard information!", {systems: asEmployee}))
    }
 
 
