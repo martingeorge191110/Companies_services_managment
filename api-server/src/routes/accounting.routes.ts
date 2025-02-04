@@ -24,9 +24,25 @@ AccountingRoute.route("/register/")
 
 
 
+/**
+ * Middleware That: 
+ *       ---> making sure about system id is valid or not
+ *       ---> this user has the authorization to do this action or not
+ */
+AccountingRoute.use(
+   accountingInstance.systemIdValid(), ValidationError, AccountingUsersMiddleware
+)
+
 AccountingRoute.route("/main-graph/")
-            .all(accountingInstance.systemIdValid(), ValidationError, AccountingUsersMiddleware)
             .get(accountingInstance.OverviewGraph)
+
+
+AccountingRoute.route("/main-daily-graph/")
+            .get(accountingInstance.DailyMonthGraph)
+
+
+AccountingRoute.route("/balance/")
+            .get(accountingInstance.AccountingBalanceEquation)
 
 
 /**
@@ -35,7 +51,6 @@ AccountingRoute.route("/main-graph/")
  * POST - Create a transaction
  */
 AccountingRoute.route("/transaction/")
-            .all(accountingInstance.systemIdValid(), ValidationError, AccountingUsersMiddleware)
             .post(accountingInstance.isTransactionValid(), ValidationError, accountingInstance.Transaction)
 
 
@@ -48,7 +63,6 @@ AccountingRoute.route("/transaction/")
  * GET: just get one invoice details
  */
 AccountingRoute.route("/invoice/")
-            .all(accountingInstance.systemIdValid(), ValidationError, AccountingUsersMiddleware)
             .post(
                uploader("invoices").single("invoice"), accountingInstance.createInvoiceValid(), ValidationError,
                uploadInvoices,accountingInstance.AddInvoices

@@ -4,6 +4,7 @@ import CompaniesController from "../controllers/companies.controller.ts";
 import { userVerifyToken } from "../middlewares/verify.token.ts";
 import { ValidationError } from "../validators/common.validators.ts";
 import AccountingRoute from "./accounting.routes.ts";
+import { DashboardUserMiddleware } from "../middlewares/company.dashboard.user.ts";
 
 
 
@@ -19,8 +20,9 @@ CompaniesRoute.route("/database/")
 
 
 CompaniesRoute.route("/dashboard/")
-         .get(companiesIntance.companyIdQuery(), ValidationError, companiesIntance.CompanyDashoard)
-         .put(companiesIntance.companyIdQuery(), ValidationError, companiesIntance.UpdateInfo)
+         .all(companiesIntance.companyIdQuery(), ValidationError, DashboardUserMiddleware)
+         .get(companiesIntance.CompanyDashoard)
+         .put(companiesIntance.UpdateInfo)
 
 
 CompaniesRoute.use('/accounting', AccountingRoute)
